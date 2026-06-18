@@ -15,27 +15,27 @@ const trustSignals = [
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-white/10 bg-[var(--brand-navy)] text-white">
-      <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[1.1fr_0.85fr_0.85fr_1fr] lg:px-8">
-        <div className="grid gap-5">
+    <footer className="border-t border-white/10 bg-[var(--brand-navy)] pb-20 text-white lg:pb-28">
+      <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
+        <div className="grid gap-5 min-w-0">
           <div>
             <div className="text-xl font-semibold tracking-tight">{siteConfig.name}</div>
             <p className="mt-3 max-w-md text-sm leading-7 text-white/72">
               A premium solution hub for events, travel, wellness, branding, finance, property, and consultation-led support.
             </p>
           </div>
-          <div className="grid gap-3 text-sm text-white/80">
-            <a className="inline-flex items-center gap-2 transition hover:text-white" href={`tel:${siteConfig.phone}`}>
+          <div className="grid gap-3 text-sm text-white/80 min-w-0">
+            <a className="inline-flex min-w-0 items-center gap-2 transition hover:text-white" href={`tel:${siteConfig.phone}`}>
               <PhoneCallIcon className="size-4" />
               {siteConfig.phone}
             </a>
-            <a className="inline-flex items-center gap-2 transition hover:text-white" href={`mailto:${siteConfig.email}`}>
+            <a className="inline-flex min-w-0 items-center gap-2 transition hover:text-white" href={`mailto:${siteConfig.email}`}>
               <MailIcon className="size-4" />
               {siteConfig.email}
             </a>
-            <div className="inline-flex items-center gap-2 text-white/72">
+            <div className="inline-flex items-start gap-2 text-white/72">
               <MapPinIcon className="size-4" />
-              Mumbai, Ahmedabad, Surat, Pune and destination support
+              <span className="leading-6">Mumbai • Ahmedabad • Nasik • Lucknow</span>
             </div>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -50,27 +50,23 @@ export function SiteFooter() {
               WhatsApp
             </a>
           </div>
-          <div className="flex items-center gap-3 text-white/72">
-            <a
-              href="https://www.instagram.com"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex size-10 items-center justify-center rounded-full border border-white/12 transition hover:bg-white/8 hover:text-white"
-            >
-              <Globe2Icon className="size-4" />
-            </a>
-            <a
-              href="https://www.facebook.com"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex size-10 items-center justify-center rounded-full border border-white/12 transition hover:bg-white/8 hover:text-white"
-            >
-              <MessageCircleIcon className="size-4" />
-            </a>
+          <div className="flex flex-wrap items-center gap-3 text-white/72">
+            {siteConfig.socialLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={link.label}
+                className="inline-flex size-10 items-center justify-center rounded-full border border-white/12 transition hover:bg-white/8 hover:text-white"
+              >
+                {link.label === "Instagram" ? <Globe2Icon className="size-4" /> : <MessageCircleIcon className="size-4" />}
+              </a>
+            ))}
           </div>
         </div>
 
-        <div>
+        <div className="min-w-0">
           <div className="text-sm font-semibold uppercase tracking-[0.2em] text-white/54">Services</div>
           <div className="mt-4 grid gap-2 text-sm text-white/72">
             {serviceCategories.slice(0, 8).map((service) => (
@@ -81,7 +77,7 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div>
+        <div className="min-w-0">
           <div className="text-sm font-semibold uppercase tracking-[0.2em] text-white/54">Quick Links</div>
           <div className="mt-4 grid gap-2 text-sm text-white/72">
             {siteConfig.footerQuickLinks.map((item) => (
@@ -104,7 +100,7 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div>
+        <div className="min-w-0">
           <div className="text-sm font-semibold uppercase tracking-[0.2em] text-white/54">Why Clients Trust Us</div>
           <div className="mt-4 grid gap-3 text-sm text-white/72">
             {trustSignals.map((item) => (
@@ -115,15 +111,15 @@ export function SiteFooter() {
           </div>
           <div className="mt-6">
             <div className="text-sm font-semibold uppercase tracking-[0.2em] text-white/54">Newsletter Signup</div>
-            <form className="mt-4 flex flex-col gap-3">
+            <form className="mt-4 flex w-full flex-col gap-3 sm:flex-row">
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="h-11 rounded-full border border-white/14 bg-white/8 px-4 text-sm text-white placeholder:text-white/40"
+                className="h-11 w-full min-w-0 rounded-full border border-white/14 bg-white/8 px-4 text-sm text-white placeholder:text-white/40 sm:flex-1"
               />
               <a
                 href={`mailto:${siteConfig.email}?subject=Newsletter%20Signup&body=Please%20add%20me%20to%20the%20Taakshvi%20newsletter.`}
-                className="inline-flex h-10 items-center justify-center rounded-full bg-white px-5 text-sm font-medium text-[var(--brand-navy)] transition hover:bg-white/90"
+                className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-white px-5 text-sm font-medium text-[var(--brand-navy)] transition hover:bg-white/90"
               >
                 Subscribe
               </a>

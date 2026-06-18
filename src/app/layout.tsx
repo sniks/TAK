@@ -58,9 +58,9 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full overflow-x-clip antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+      <body className="min-h-full flex flex-col overflow-x-clip bg-background text-foreground">
         <CallbackProvider
           routingRules={routingRules.map((rule) => ({
             serviceSlug: rule.service?.slug ?? null,

@@ -31,6 +31,16 @@ export const siteConfig = {
     { label: "Privacy Policy", href: "/privacy-policy" },
     { label: "Terms & Conditions", href: "/terms-conditions" },
   ],
+  socialLinks: [
+    {
+      label: "Instagram",
+      href: "https://www.instagram.com/taakshvisolutionhub?igsh=NjU2NjRmZnpodHg0&utm_source=qr",
+    },
+    {
+      label: "WhatsApp Channel",
+      href: "https://whatsapp.com/channel/0029VbDDwiM7oQheKXOsnN2K",
+    },
+  ],
 }
 
 export const serviceCategories = [

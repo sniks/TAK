@@ -81,7 +81,7 @@ export default function AboutPage() {
               {[
                 ["13+", "Service categories under one brand"],
                 ["Fast response", "Callback, WhatsApp, email, and guided conversations"],
-                ["Multi-city", "Mumbai, Ahmedabad, Surat, Pune and remote coordination"],
+                  ["Multi-city", "Mumbai • Ahmedabad • Nasik • Lucknow"],
                 ["Fast response", "Callback, WhatsApp, email, and tracked form flows"],
               ].map(([value, label]) => (
                 <Card key={label} className="bg-white/92 shadow-xl shadow-blue-950/8 backdrop-blur">

@@ -128,6 +128,29 @@ npm run prisma:migrate   # Apply local database migrations
 npm run prisma:seed      # Seed local database
 ```
 
+## Deploy On Vercel
+
+This project is a full Next.js app, so Vercel can deploy it directly from the repo root.
+
+1. Push the repository to GitHub, GitLab, or Bitbucket.
+2. In Vercel, create a new project and import this repository.
+3. Leave the root directory as the repo root unless you move the app elsewhere.
+4. Set these environment variables in Vercel for Production and Preview:
+   - `DATABASE_URL`
+   - `AUTH_SECRET`
+   - `NEXT_PUBLIC_SITE_URL`
+   - `AUTH_URL` if you want to pin the auth base URL explicitly
+   - Any optional integrations you are using, such as `RESEND_API_KEY`, `S3_*`, or analytics IDs
+5. Make sure the production database already has the Prisma schema applied.
+6. Deploy.
+
+Notes:
+
+- Vercel automatically detects Next.js build settings for this project.
+- The app already builds successfully with `npm run build` in this workspace.
+- On Vercel, Auth.js can infer the host automatically, so `AUTH_URL` is often optional, but keeping it set to your production domain is fine.
+- After changing environment variables in Vercel, you must redeploy for the new values to take effect.
+
 ## Project Structure
 
 ```text

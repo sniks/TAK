@@ -30,7 +30,7 @@ export default function ContactPage() {
               <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
                 Callback, WhatsApp, email, and the full enquiry form all help you start the conversation in the way that feels most convenient.
               </p>
-              <div className="mt-8 grid gap-4 sm:grid-cols-3">
+              <div className="mt-8 grid items-stretch gap-4 sm:grid-cols-3">
                 <ContactCard
                   title="Call"
                   copy={siteConfig.phone}
@@ -88,11 +88,11 @@ function ContactCard({
   return (
     <a
       href={href}
-      className="rounded-2xl border border-border bg-white p-5 shadow-lg shadow-blue-950/6 transition hover:-translate-y-1 hover:shadow-xl"
+      className="flex h-full min-h-[152px] w-full flex-col overflow-hidden rounded-2xl border border-border bg-white p-5 shadow-lg shadow-blue-950/6 transition hover:-translate-y-1 hover:shadow-xl"
     >
-      <div className="mb-3 text-[var(--brand-pink)]">{icon}</div>
-      <div className="font-semibold text-[var(--brand-navy)]">{title}</div>
-      <div className="mt-1 text-sm text-muted-foreground">{copy}</div>
+      <div className="mb-3 flex size-11 shrink-0 items-center justify-center text-[var(--brand-pink)]">{icon}</div>
+      <div className="min-w-0 font-semibold text-[var(--brand-navy)]">{title}</div>
+      <div className="mt-1 min-w-0 break-words text-sm leading-6 text-muted-foreground [overflow-wrap:anywhere]">{copy}</div>
     </a>
   )
 }

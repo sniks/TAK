@@ -46,11 +46,17 @@ export default function ServicesPage() {
               </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid items-stretch gap-4 sm:grid-cols-2">
               {featuredGroups.map((item, index) => (
-                <Card key={item} className="bg-white/92 shadow-xl shadow-blue-950/8 backdrop-blur">
+                <Card key={item} className="h-full overflow-hidden bg-white/92 shadow-xl shadow-blue-950/8 backdrop-blur">
                   <CardHeader>
-                    <div className={index % 2 === 0 ? "text-[var(--brand-pink)]" : "text-[var(--brand-green)]"}>
+                    <div
+                      className={
+                        index % 2 === 0
+                          ? "flex size-11 shrink-0 items-center justify-center text-[var(--brand-pink)]"
+                          : "flex size-11 shrink-0 items-center justify-center text-[var(--brand-green)]"
+                      }
+                    >
                       <SparklesIcon />
                     </div>
                     <CardTitle className="text-lg">{item}</CardTitle>
@@ -74,11 +80,19 @@ export default function ServicesPage() {
               Each page has its own context, enquiry path, and service guidance rather than feeling like a generic card list.
             </p>
           </div>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3">
             {serviceCategories.map((service, index) => (
-              <Card key={service.slug} className="group border-border/80 bg-white transition hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-950/10">
+              <Card key={service.slug} className="group h-full overflow-hidden border-border/80 bg-white transition hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-950/10">
                 <CardHeader>
-                  <div className={index % 3 === 0 ? "text-[var(--brand-pink)]" : index % 3 === 1 ? "text-[var(--brand-blue)]" : "text-[var(--brand-green)]"}>
+                  <div
+                    className={
+                      index % 3 === 0
+                        ? "flex size-11 shrink-0 items-center justify-center text-[var(--brand-pink)]"
+                        : index % 3 === 1
+                          ? "flex size-11 shrink-0 items-center justify-center text-[var(--brand-blue)]"
+                          : "flex size-11 shrink-0 items-center justify-center text-[var(--brand-green)]"
+                    }
+                  >
                     <SparklesIcon />
                   </div>
                   <CardTitle>{service.name}</CardTitle>
@@ -108,9 +122,9 @@ export default function ServicesPage() {
               ["Planning", "Define scope, deliverables, and next-step communication."],
               ["Delivery", "Keep execution and follow-up visible to the client."],
             ].map(([title, copy], index) => (
-              <Card key={title}>
+              <Card key={title} className="h-full overflow-hidden">
                 <CardHeader>
-                  <div className="flex size-10 items-center justify-center rounded-full bg-[var(--brand-navy)] text-sm font-semibold text-white">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--brand-navy)] text-sm font-semibold text-white">
                     {index + 1}
                   </div>
                   <CardTitle>{title}</CardTitle>
@@ -127,9 +141,9 @@ export default function ServicesPage() {
             ["What stays consistent", "Every service page follows the same conversion logic, callback system, and tracked lead workflow."],
             ["What changes by service", "Questions, messaging, benefits, and recommended next actions adapt to the selected category."],
           ].map(([title, copy]) => (
-            <Card key={title}>
+            <Card key={title} className="h-full overflow-hidden">
               <CardHeader>
-                <div className="mb-3 text-[var(--brand-green)]">
+                <div className="mb-3 flex size-11 shrink-0 items-center justify-center text-[var(--brand-green)]">
                   <BadgeCheckIcon />
                 </div>
                 <CardTitle>{title}</CardTitle>

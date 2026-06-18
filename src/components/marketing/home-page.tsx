@@ -90,7 +90,7 @@ const whyChooseCards = [
   {
     icon: MapPinnedIcon,
     title: "Multi-City Coverage",
-    copy: "Support across Mumbai, Ahmedabad, Surat, Pune, and destination-led service requirements.",
+    copy: "Support across Mumbai, Ahmedabad, Nasik, and Lucknow, plus destination-led service requirements.",
   },
   {
     icon: BadgeCheckIcon,
@@ -194,14 +194,17 @@ export function HomePage({
               </div>
             </div>
 
-            <motion.div style={{ x: collageX, y: collageY }} className="relative hidden min-h-[520px] items-center justify-center lg:flex">
+            <motion.div
+              style={{ x: collageX, y: collageY }}
+              className="relative hidden min-h-[520px] max-w-full items-center justify-center overflow-hidden lg:flex"
+            >
               <Image
                 src="/brand/hero-collage.png"
                 alt="Corporate events, luxury travel, wellness, real estate, and brand strategy collage"
                 width={860}
                 height={860}
                 priority
-                className="relative z-10 w-full max-w-[760px] object-contain mix-blend-multiply drop-shadow-2xl [mask-image:radial-gradient(ellipse_at_center,black_60%,transparent_86%)]"
+                className="relative z-10 w-full max-w-full object-contain mix-blend-multiply drop-shadow-2xl [mask-image:radial-gradient(ellipse_at_center,black_60%,transparent_86%)]"
               />
               <motion.div
                 style={{ rotate: ribbonRotate }}
@@ -234,26 +237,28 @@ export function HomePage({
             </div>
           </div>
 
-          <div className="relative mx-auto -mb-14 hidden w-full max-w-[1320px] px-4 sm:px-6 lg:block">
-            <div className="grid grid-cols-[repeat(13,minmax(0,1fr))] overflow-visible rounded-[1.75rem] border border-border bg-white/94 shadow-xl shadow-blue-950/8 backdrop-blur">
+          <div className="relative mx-auto mt-10 w-full max-w-[1320px] px-4 sm:px-6">
+            <div className="grid auto-rows-fr grid-cols-2 gap-px overflow-hidden rounded-[1.75rem] border border-border bg-border shadow-xl shadow-blue-950/8 backdrop-blur sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7">
               {serviceCategories.map((service, index) => {
                 const Icon = serviceIcons[index] ?? StarIcon
                 return (
                   <Link
                     key={service.slug}
                     href={`/services/${service.slug}`}
-                    className="group flex min-h-[112px] flex-col items-center justify-center gap-2 border-r border-border px-2 py-4 text-center text-xs font-medium last:border-r-0 hover:bg-[linear-gradient(135deg,rgba(239,63,134,0.08),rgba(79,181,84,0.08))]"
+                    className="group box-border flex h-full min-h-[136px] w-full flex-col items-center justify-center gap-3 overflow-hidden bg-white px-4 py-5 text-center text-xs font-medium hover:bg-[linear-gradient(135deg,rgba(239,63,134,0.08),rgba(79,181,84,0.08))]"
                   >
                     <Icon
                       className={
                         index % 3 === 0
-                          ? "size-5 text-[var(--brand-pink)] transition group-hover:scale-110"
+                          ? "size-6 shrink-0 text-[var(--brand-pink)] transition group-hover:scale-110"
                           : index % 3 === 1
-                            ? "size-5 text-[var(--brand-blue)] transition group-hover:scale-110"
-                            : "size-5 text-[var(--brand-green)] transition group-hover:scale-110"
+                            ? "size-6 shrink-0 text-[var(--brand-blue)] transition group-hover:scale-110"
+                            : "size-6 shrink-0 text-[var(--brand-green)] transition group-hover:scale-110"
                       }
                     />
-                    <span className="max-w-[84px] leading-tight text-[var(--brand-navy)]">{service.name}</span>
+                    <span className="min-w-0 max-w-[128px] whitespace-normal break-words leading-tight text-[var(--brand-navy)]">
+                      {service.name}
+                    </span>
                   </Link>
                 )
               })}
@@ -261,7 +266,7 @@ export function HomePage({
           </div>
         </section>
 
-        <section className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-24 sm:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:px-8">
+        <section className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-28 sm:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:px-8">
           <div className="flex flex-col gap-4">
             <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--brand-pink)]">About Taakshvi</div>
             <h2 className="text-3xl font-semibold text-[var(--brand-navy)]">A premium solution hub built around trust, speed, and thoughtful coordination.</h2>
@@ -277,14 +282,14 @@ export function HomePage({
               ))}
             </div>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid items-stretch gap-4 sm:grid-cols-2">
             {serviceCategories.slice(0, 8).map((service, index) => {
               const Icon = serviceIcons[index] ?? StarIcon
               return (
                 <Link key={service.slug} href={`/services/${service.slug}`}>
-                  <Card className="group h-full transition hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-950/10">
+                  <Card className="group h-full overflow-hidden transition hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-950/10">
                     <CardHeader>
-                      <div className="mb-3 flex size-11 items-center justify-center rounded-lg bg-muted text-[var(--brand-blue)] transition group-hover:bg-[var(--brand-navy)] group-hover:text-white">
+                      <div className="mb-3 flex size-11 shrink-0 items-center justify-center rounded-lg bg-muted text-[var(--brand-blue)] transition group-hover:bg-[var(--brand-navy)] group-hover:text-white">
                         <Icon />
                       </div>
                       <CardTitle>{service.name}</CardTitle>
@@ -400,7 +405,7 @@ export function HomePage({
 
 function RecentEnquiriesWidget({ enquiries }: { enquiries: RecentEnquiry[] }) {
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-30 rounded-2xl border border-border bg-white/95 p-4 shadow-2xl shadow-blue-950/12 backdrop-blur-xl lg:left-auto lg:right-8 lg:w-80">
+    <div className="fixed bottom-4 left-4 right-4 z-40 rounded-2xl border border-border bg-white/95 p-4 shadow-2xl shadow-blue-950/12 backdrop-blur-xl sm:left-auto sm:right-4 sm:w-[21rem] lg:bottom-8 lg:right-8 lg:w-80">
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm font-semibold text-[var(--brand-navy)]">
           <span className="size-2 rounded-full bg-[var(--brand-green)]" />
