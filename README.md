@@ -1,36 +1,179 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TAAKSHVI Solution Hub Platform
 
-## Getting Started
+Next.js application for the TAAKSHVI Solution Hub website, lead routing, CMS, and admin dashboard.
 
-First, run the development server:
+## Prerequisites
+
+Install these before running the project:
+
+- Node.js 20 or newer
+- npm
+- PostgreSQL 15 or newer
+- Git
+
+## 1. Clone the Repository
+
+```bash
+git clone <repository-url>
+cd TAK
+```
+
+Replace `<repository-url>` with the GitHub repository URL.
+
+## 2. Install Libraries
+
+Install all project dependencies from `package-lock.json`:
+
+```bash
+npm install
+```
+
+## 3. Create Environment File
+
+Copy the example environment file:
+
+```bash
+cp .env.example .env
+```
+
+On Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Update `.env` with your local values:
+
+```env
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/taakshvi"
+AUTH_SECRET="replace-with-strong-random-secret"
+AUTH_URL="http://localhost:3000"
+NEXT_PUBLIC_SITE_URL="http://localhost:3000"
+```
+
+Optional services such as Resend, S3, Google Analytics, GTM, and Meta Pixel can stay empty for local development unless you are testing those integrations.
+
+## 4. Create the Database
+
+Create a PostgreSQL database named `taakshvi`.
+
+Example using `psql`:
+
+```bash
+createdb taakshvi
+```
+
+If your PostgreSQL username, password, host, or port are different, update `DATABASE_URL` in `.env`.
+
+## 5. Generate Prisma Client
+
+```bash
+npm run prisma:generate
+```
+
+## 6. Run Database Migrations
+
+```bash
+npm run prisma:migrate
+```
+
+This applies the Prisma migrations from `prisma/migrations`.
+
+## 7. Seed Demo Data
+
+```bash
+npm run prisma:seed
+```
+
+The seed script creates services, routing rules, CMS content, testimonials, and an admin user.
+
+Seeded admin login:
+
+```text
+Email: admin@taakshvisolutionhub.com
+Password: ChangeMe@12345
+```
+
+Change this password before using the app in production.
+
+## 8. Run the Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```text
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Admin pages:
 
-## Learn More
+```text
+http://localhost:3000/admin/login
+http://localhost:3000/admin
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Useful Commands
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run dev              # Start local development server
+npm run build            # Build production app
+npm run start            # Start production build
+npm run lint             # Run ESLint
+npm run typecheck        # Run TypeScript checks
+npm run prisma:generate  # Generate Prisma client
+npm run prisma:migrate   # Apply local database migrations
+npm run prisma:seed      # Seed local database
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
+```text
+src/app/          Next.js routes and pages
+src/components/   UI, marketing, and admin components
+src/lib/          Shared utilities, content, database, and routing logic
+src/server/       Server actions
+prisma/           Prisma schema, migrations, and seed script
+public/brand/     Brand assets
+docs/             Architecture and planning documents
+qa/               QA screenshots and Playwright checks
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Documentation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+More project documentation is available in `docs/`:
+
+- `docs/folder-structure.md`
+- `docs/database-er.md`
+- `docs/api-documentation.md`
+- `docs/component-architecture.md`
+- `docs/deployment-architecture.md`
+- `docs/security-plan.md`
+- `docs/seo-strategy.md`
+- `docs/development-roadmap.md`
+
+## Troubleshooting
+
+If Prisma cannot connect to the database, confirm PostgreSQL is running and `DATABASE_URL` is correct.
+
+If the Prisma client is missing or outdated, run:
+
+```bash
+npm run prisma:generate
+```
+
+If dependencies are inconsistent, remove `node_modules` and reinstall:
+
+```bash
+rm -rf node_modules
+npm install
+```
+
+On Windows PowerShell:
+
+```powershell
+Remove-Item -Recurse -Force node_modules
+npm install
+```
