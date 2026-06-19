@@ -99,7 +99,7 @@ Change this password before using the app in production.
 ## 8. Run the Development Server
 
 ```bash
-npm run dev
+ npm run dev
 ```
 
 Open:

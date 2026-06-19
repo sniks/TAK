@@ -4,19 +4,97 @@ import { PrismaClient, PublishStatus, UserRoleName } from "@prisma/client"
 const prisma = new PrismaClient()
 
 const services = [
-  ["Corporate Events", "corporate-events", "End-to-end corporate event planning, logistics, production, and guest experience management."],
-  ["Tours & Travel", "tours-travel", "Custom travel coordination for leisure, groups, retreats, and business movement."],
-  ["Wellness Retreats", "wellness-retreats", "Curated wellness escapes, group retreats, and mindful experience planning."],
-  ["Branding & Marketing", "branding-marketing", "Brand identity, campaigns, launch support, and strategic marketing execution."],
-  ["Photography & Videography", "photography-videography", "Professional coverage for events, campaigns, spaces, products, and people."],
-  ["Artist Management", "artist-management", "Artist discovery, booking, coordination, and event performance management."],
-  ["Venue Sourcing", "venue-sourcing", "Venue discovery and negotiation for events, retreats, shoots, and meetings."],
-  ["Team Building Activities", "team-building-activities", "Structured team experiences that improve connection, morale, and collaboration."],
-  ["Real Estate", "real-estate", "Property support for buying, selling, renting, leasing, and location advisory."],
-  ["Astrology", "astrology", "Consultation coordination for personal, family, and business guidance."],
-  ["Finance", "finance", "Financial requirement discovery and consultation routing for qualified enquiries."],
-  ["Health & Wellness", "health-wellness", "Health, lifestyle, and wellness service coordination with trusted partners."],
-  ["Other", "other", "Custom requirements routed to the right Taakshvi team member."],
+  {
+    name: "Corporate Events",
+    slug: "corporate-events",
+    description: "End-to-end corporate event planning, logistics, production, and guest experience management.",
+    serviceEmail: "namaste@taakshvisolutionhub.com",
+    serviceWhatsappNumber: "7977938960",
+  },
+  {
+    name: "Tours & Travel",
+    slug: "tours-travel",
+    description: "Custom travel coordination for leisure, groups, retreats, and business movement.",
+    serviceEmail: "namaste@taakshvisolutionhub.com",
+    serviceWhatsappNumber: "8460623469",
+  },
+  {
+    name: "Wellness Retreats",
+    slug: "wellness-retreats",
+    description: "Curated wellness escapes, group retreats, and mindful experience planning.",
+    serviceEmail: "namaste@taakshvisolutionhub.com",
+    serviceWhatsappNumber: "7977938960",
+  },
+  {
+    name: "Branding & Marketing",
+    slug: "branding-marketing",
+    description: "Brand identity, campaigns, launch support, and strategic marketing execution.",
+    serviceEmail: "namaste@taakshvisolutionhub.com",
+    serviceWhatsappNumber: "7977938960",
+  },
+  {
+    name: "Photography & Videography",
+    slug: "photography-videography",
+    description: "Professional coverage for events, campaigns, spaces, products, and people.",
+    serviceEmail: "namaste@taakshvisolutionhub.com",
+    serviceWhatsappNumber: "7977938960",
+  },
+  {
+    name: "Artist Management",
+    slug: "artist-management",
+    description: "Artist discovery, booking, coordination, and event performance management.",
+    serviceEmail: "namaste@taakshvisolutionhub.com",
+    serviceWhatsappNumber: "7977938960",
+  },
+  {
+    name: "Venue Sourcing",
+    slug: "venue-sourcing",
+    description: "Venue discovery and negotiation for events, retreats, shoots, and meetings.",
+    serviceEmail: "namaste@taakshvisolutionhub.com",
+    serviceWhatsappNumber: "7977938960",
+  },
+  {
+    name: "Team Building Activities",
+    slug: "team-building-activities",
+    description: "Structured team experiences that improve connection, morale, and collaboration.",
+    serviceEmail: "namaste@taakshvisolutionhub.com",
+    serviceWhatsappNumber: "7977938960",
+  },
+  {
+    name: "Real Estate",
+    slug: "real-estate",
+    description: "Property support for buying, selling, renting, leasing, and location advisory.",
+    serviceEmail: "namaste@taakshvisolutionhub.com",
+    serviceWhatsappNumber: "8460623469",
+  },
+  {
+    name: "Astrology",
+    slug: "astrology",
+    description: "Consultation coordination for personal, family, and business guidance.",
+    serviceEmail: "namaste@taakshvisolutionhub.com",
+    serviceWhatsappNumber: "9833031572",
+  },
+  {
+    name: "Finance",
+    slug: "finance",
+    description: "Financial requirement discovery and consultation routing for qualified enquiries.",
+    serviceEmail: "namaste@taakshvisolutionhub.com",
+    serviceWhatsappNumber: "9326277096",
+  },
+  {
+    name: "Health & Wellness",
+    slug: "health-wellness",
+    description: "Health, lifestyle, and wellness service coordination with trusted partners.",
+    serviceEmail: "namaste@taakshvisolutionhub.com",
+    serviceWhatsappNumber: "8460623469",
+  },
+  {
+    name: "Other",
+    slug: "other",
+    description: "Custom requirements routed to the right Taakshvi team member.",
+    serviceEmail: "namaste@taakshvisolutionhub.com",
+    serviceWhatsappNumber: "7977938960",
+  },
 ]
 
 const permissions = [
@@ -460,11 +538,23 @@ function toMetaDescription(value) {
 }
 
 async function main() {
-  for (const [name, slug, description] of services) {
+  for (const service of services) {
     await prisma.service.upsert({
-      where: { slug },
-      update: { name, description, isActive: true },
-      create: { name, slug, description },
+      where: { slug: service.slug },
+      update: {
+        name: service.name,
+        description: service.description,
+        serviceEmail: service.serviceEmail,
+        serviceWhatsappNumber: service.serviceWhatsappNumber,
+        isActive: true,
+      },
+      create: {
+        name: service.name,
+        slug: service.slug,
+        description: service.description,
+        serviceEmail: service.serviceEmail,
+        serviceWhatsappNumber: service.serviceWhatsappNumber,
+      },
     })
   }
 

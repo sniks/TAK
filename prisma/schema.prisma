@@ -123,6 +123,8 @@ model Service {
   name        String            @unique
   slug        String            @unique
   description String
+  serviceEmail String?
+  serviceWhatsappNumber String?
   isActive    Boolean           @default(true)
   leads       Lead[]
   routing     LeadRoutingRule[]
@@ -131,12 +133,15 @@ model Service {
 
 model Lead {
   id              String           @id @default(cuid())
+  requestId       String?          @unique
   fullName        String
   mobile          String
   whatsapp        String?
   email           String
   company         String?
   city            String
+  message         String?
+  submissionType  String           @default("callback")
   serviceId       String
   service         Service          @relation(fields: [serviceId], references: [id])
   servicePayload  Json

@@ -13,6 +13,7 @@ import {
   HomeIcon,
   MapPinnedIcon,
   MegaphoneIcon,
+  LaptopMinimalIcon,
   PlaneIcon,
   ShieldCheckIcon,
   SparklesIcon,
@@ -64,6 +65,7 @@ const serviceIcons = [
   StarIcon,
   HeartPulseIcon,
   ShieldCheckIcon,
+  LaptopMinimalIcon,
 ]
 
 const whyChooseCards = [
@@ -119,6 +121,15 @@ const mediaCoverage = [
     description: "A richer visual proof point for visitors who want to understand event quality and atmosphere.",
   },
 ]
+
+const homepageServiceCategories = [
+  ...serviceCategories,
+  {
+    name: "Website & Software Development",
+    slug: "website-software-development",
+    href: "/services",
+  },
+] as const
 
 export function HomePage({
   recentEnquiries,
@@ -239,12 +250,13 @@ export function HomePage({
 
           <div className="relative mx-auto mt-10 w-full max-w-[1320px] px-4 sm:px-6">
             <div className="grid auto-rows-fr grid-cols-2 gap-px overflow-hidden rounded-[1.75rem] border border-border bg-border shadow-xl shadow-blue-950/8 backdrop-blur sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7">
-              {serviceCategories.map((service, index) => {
+              {homepageServiceCategories.map((service, index) => {
                 const Icon = serviceIcons[index] ?? StarIcon
+                const href = "href" in service ? service.href : `/services/${service.slug}`
                 return (
                   <Link
                     key={service.slug}
-                    href={`/services/${service.slug}`}
+                    href={href}
                     className="group box-border flex h-full min-h-[136px] w-full flex-col items-center justify-center gap-3 overflow-hidden bg-white px-4 py-5 text-center text-xs font-medium hover:bg-[linear-gradient(135deg,rgba(239,63,134,0.08),rgba(79,181,84,0.08))]"
                   >
                     <Icon
