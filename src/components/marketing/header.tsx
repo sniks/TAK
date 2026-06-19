@@ -6,11 +6,12 @@ import { usePathname } from "next/navigation"
 import { PhoneCallIcon } from "lucide-react"
 
 import { CallbackButton } from "@/components/marketing/callback-button"
+import { useSiteData } from "@/components/marketing/site-data-provider"
 import { Button } from "@/components/ui/button"
-import { siteConfig } from "@/lib/site"
 
 export function Header() {
   const pathname = usePathname()
+  const { settings } = useSiteData()
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur-xl">
@@ -33,7 +34,7 @@ export function Header() {
         </Link>
 
         <nav className="hidden items-center gap-7 text-sm font-medium text-muted-foreground lg:flex">
-          {siteConfig.nav.map((item) => {
+          {settings.nav.map((item) => {
             const isActive =
               item.href === "/"
                 ? pathname === "/"
@@ -52,9 +53,9 @@ export function Header() {
         </nav>
 
         <div className="hidden items-center gap-3 sm:flex">
-          <Button variant="outline" size="lg" render={<a href={`tel:${siteConfig.phone}`} />}>
+          <Button variant="outline" size="lg" render={<a href={`tel:${settings.primaryPhone}`} />}>
             <PhoneCallIcon data-icon="inline-start" />
-            {siteConfig.phone}
+            {settings.primaryPhone}
           </Button>
           <CallbackButton
             className="bg-[var(--brand-pink)] text-white hover:bg-[color-mix(in_oklab,var(--brand-pink),black_8%)]"

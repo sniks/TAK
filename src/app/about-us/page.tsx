@@ -8,6 +8,7 @@ import { Header } from "@/components/marketing/header"
 import { SiteFooter } from "@/components/marketing/site-footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { getSiteSettings } from "@/lib/site-settings"
 
 export const metadata: Metadata = {
   title: "About Us",
@@ -51,7 +52,9 @@ const operatingCards = [
   },
 ]
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const settings = await getSiteSettings()
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -61,11 +64,9 @@ export default function AboutPage() {
             <div>
               <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "About Us" }]} />
               <h1 className="max-w-4xl text-4xl font-semibold leading-tight text-[var(--brand-navy)] sm:text-5xl">
-                A premium solution hub built to make multi-service coordination feel simple, trusted, and well managed.
+                {settings.aboutHeadline}
               </h1>
-              <p className="mt-6 max-w-3xl text-lg leading-8 text-muted-foreground">
-                Taakshvi exists for clients who do not want to chase multiple vendors, repeat the same requirement, or wonder who owns the next step. We combine premium service discovery with thoughtful coordination and dependable follow-through.
-              </p>
+              <p className="mt-6 max-w-3xl text-lg leading-8 text-muted-foreground">{settings.aboutDescription}</p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <CallbackButton className="bg-[var(--brand-pink)] text-white">
                   Request Callback
@@ -81,8 +82,8 @@ export default function AboutPage() {
               {[
                 ["13+", "Service categories under one brand"],
                 ["Fast response", "Callback, WhatsApp, email, and guided conversations"],
-                  ["Multi-city", "Mumbai • Ahmedabad • Nasik • Lucknow"],
-                ["Fast response", "Callback, WhatsApp, email, and tracked form flows"],
+                ["Multi-city", settings.citiesLabel],
+                ["Trusted support", "One premium service desk coordinating discovery, follow-up, and next steps."],
               ].map(([value, label]) => (
                 <Card key={label} className="bg-white/92 shadow-xl shadow-blue-950/8 backdrop-blur">
                   <CardHeader>

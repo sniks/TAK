@@ -10,19 +10,20 @@ import { Header } from "@/components/marketing/header"
 import { SiteFooter } from "@/components/marketing/site-footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { getServiceBySlug, serviceCategories, siteConfig } from "@/lib/site"
+import { getPublicServices, getSiteSettings } from "@/lib/site-settings"
 
 type Props = {
   params: Promise<{ slug: string }>
 }
 
 export function generateStaticParams() {
-  return serviceCategories.map((service) => ({ slug: service.slug }))
+  return []
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const service = getServiceBySlug(slug)
+  const services = await getPublicServices()
+  const service = services.find((item) => item.slug === slug)
   if (!service) return {}
 
   return {
@@ -68,10 +69,11 @@ function getFaqs(serviceName: string) {
 
 export default async function ServicePage({ params }: Props) {
   const { slug } = await params
-  const service = getServiceBySlug(slug)
+  const [services, settings] = await Promise.all([getPublicServices(), getSiteSettings()])
+  const service = services.find((item) => item.slug === slug)
   if (!service) notFound()
 
-  const relatedServices = serviceCategories.filter((item) => item.slug !== service.slug).slice(0, 3)
+  const relatedServices = services.filter((item) => item.slug !== service.slug).slice(0, 3)
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -111,7 +113,7 @@ export default async function ServicePage({ params }: Props) {
                   variant="outline"
                   render={
                     <a
-                      href={`https://wa.me/${siteConfig.phone}?text=Hello%20Team%2C%20I%20am%20interested%20in%20${encodeURIComponent(service.name)}.`}
+                      href={`https://wa.me/${settings.primaryWhatsapp}?text=Hello%20Team%2C%20I%20am%20interested%20in%20${encodeURIComponent(service.name)}.`}
                     />
                   }
                 >

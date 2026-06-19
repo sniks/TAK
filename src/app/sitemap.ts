@@ -1,8 +1,9 @@
 import type { MetadataRoute } from "next"
 
-import { serviceCategories, siteConfig } from "@/lib/site"
+import { getPublicServices, getSiteSettings } from "@/lib/site-settings"
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const [services, settings] = await Promise.all([getPublicServices(), getSiteSettings()])
   const staticRoutes = [
     "",
     "/about-us",
@@ -20,13 +21,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [
     ...staticRoutes.map((route) => ({
-      url: `${siteConfig.url}${route}`,
+      url: `${settings.siteUrl}${route}`,
       lastModified: new Date(),
       changeFrequency: "weekly" as const,
       priority: route === "" ? 1 : 0.7,
     })),
-    ...serviceCategories.map((service) => ({
-      url: `${siteConfig.url}/services/${service.slug}`,
+    ...services.map((service) => ({
+      url: `${settings.siteUrl}/services/${service.slug}`,
       lastModified: new Date(),
       changeFrequency: "weekly" as const,
       priority: 0.8,

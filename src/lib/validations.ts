@@ -1,12 +1,5 @@
 import { z } from "zod"
 
-import { serviceCategories } from "@/lib/site"
-
-export const serviceSlugs = serviceCategories.map((service) => service.slug) as [
-  string,
-  ...string[],
-]
-
 export const leadFormSchema = z.object({
   fullName: z.string().min(2, "Full name is required").max(120),
   mobile: z.string().min(8, "Mobile number is required").max(20),
@@ -14,7 +7,7 @@ export const leadFormSchema = z.object({
   email: z.string().email("Valid email is required"),
   company: z.string().max(160).optional(),
   city: z.string().min(2, "City is required").max(120),
-  service: z.enum(serviceSlugs),
+  service: z.string().min(1, "Please select a service."),
   consentAccepted: z.literal("on", { message: "Consent is required" }),
   servicePayload: z.record(z.string(), z.string()).default({}),
 })

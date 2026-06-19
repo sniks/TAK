@@ -4,7 +4,6 @@ import { leadFormSchema } from "@/lib/validations"
 import { assignLeadOwnerFromDatabase } from "@/lib/lead-routing"
 import { prisma } from "@/lib/db"
 import { defaultLeadOwner } from "@/lib/routing-config"
-import { serviceCategories } from "@/lib/site"
 
 export type LeadActionState = {
   ok: boolean
@@ -48,7 +47,7 @@ export async function createLead(
     city: parsed.data.city,
   })
 
-  const service = serviceCategories.find((item) => item.slug === parsed.data.service)
+  const service = await prisma.service.findUnique({ where: { slug: parsed.data.service } })
 
   if (!service) {
     return {
@@ -75,7 +74,7 @@ export async function createLead(
           create: {
             name: service.name,
             slug: service.slug,
-            description: service.summary,
+            description: service.description,
           },
         },
       },

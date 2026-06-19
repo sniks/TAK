@@ -4,12 +4,13 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Textarea } from "@/components/ui/textarea"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { requireAdminSession } from "@/lib/admin"
+import { requirePermission } from "@/lib/admin"
 import { prisma } from "@/lib/db"
-import { createRoutingRule, deleteRoutingRule, updateSettings } from "@/server/settings-actions"
+import { createRoutingRule, createService, deleteRoutingRule, deleteService, updateServices, updateSettings } from "@/server/settings-actions"
 
 export const metadata: Metadata = {
   title: "Admin Settings",
@@ -17,10 +18,11 @@ export const metadata: Metadata = {
 }
 
 export default async function SettingsPage() {
-  await requireAdminSession()
+  await requirePermission("settings.write")
 
-  const [contact, recent, seo, social, homepage, emailSettings, whatsappSettings, footerSettings, mediaSettings, routingRules, services] =
+  const [company, contact, recent, seo, social, homepage, emailSettings, whatsappSettings, footerSettings, routingRules, services] =
     await Promise.all([
+      prisma.setting.findUnique({ where: { key: "company_profile" } }),
       prisma.setting.findUnique({ where: { key: "site_contact" } }),
       prisma.setting.findUnique({ where: { key: "recent_enquiries_widget" } }),
       prisma.setting.findUnique({ where: { key: "site_seo" } }),
@@ -29,7 +31,6 @@ export default async function SettingsPage() {
       prisma.setting.findUnique({ where: { key: "email_settings" } }),
       prisma.setting.findUnique({ where: { key: "whatsapp_settings" } }),
       prisma.setting.findUnique({ where: { key: "footer_settings" } }),
-      prisma.setting.findUnique({ where: { key: "media_settings" } }),
       prisma.leadRoutingRule.findMany({
         include: { service: true },
         orderBy: [{ priority: "asc" }, { ownerName: "asc" }],
@@ -37,15 +38,48 @@ export default async function SettingsPage() {
       prisma.service.findMany({ orderBy: { name: "asc" } }),
     ])
 
-  const contactValue = (contact?.value ?? {}) as { phone?: string; email?: string }
-  const recentValue = (recent?.value ?? {}) as { enabled?: boolean; limit?: number }
-  const seoValue = (seo?.value ?? {}) as { title?: string; description?: string }
-  const socialValue = (social?.value ?? {}) as { instagram?: string; facebook?: string; linkedin?: string }
-  const homepageValue = (homepage?.value ?? {}) as { heroHeadline?: string; heroSubheadline?: string }
+  const companyValue = (company?.value ?? {}) as {
+    companyName?: string
+    legalName?: string
+    siteUrl?: string
+    tagline?: string
+    description?: string
+    aboutHeadline?: string
+    aboutDescription?: string
+    citiesLabel?: string
+  }
+  const contactValue = (contact?.value ?? {}) as { phone?: string; email?: string; address?: string }
+  const recentValue = (recent?.value ?? {}) as { enabled?: boolean; limit?: number; liveBadge?: boolean }
+  const seoValue = (seo?.value ?? {}) as { title?: string; description?: string; ogImage?: string }
+  const socialValue = (social?.value ?? {}) as {
+    instagram?: string
+    facebook?: string
+    linkedin?: string
+    whatsappChannel?: string
+  }
+  const homepageValue = (homepage?.value ?? {}) as {
+    heroBadge?: string
+    heroHeadline?: string
+    heroSubheadline?: string
+    primaryCtaLabel?: string
+    secondaryCtaLabel?: string
+    servicesHeading?: string
+    whyChooseHeading?: string
+    whyChooseIntro?: string
+    mediaHeading?: string
+    mediaIntro?: string
+    ctaTitle?: string
+    ctaCopy?: string
+  }
   const emailValue = (emailSettings?.value ?? {}) as { from?: string; replyTo?: string }
   const whatsappValue = (whatsappSettings?.value ?? {}) as { primary?: string }
-  const footerValue = (footerSettings?.value ?? {}) as { trustHeading?: string }
-  const mediaValue = (mediaSettings?.value ?? {}) as { sectionHeading?: string }
+  const footerValue = (footerSettings?.value ?? {}) as {
+    trustHeading?: string
+    trustPoints?: string[]
+    newsletterLabel?: string
+    ctaTitle?: string
+    ctaCopy?: string
+  }
 
   return (
     <div className="min-h-screen bg-muted/35 p-4 sm:p-8">
@@ -69,15 +103,47 @@ export default async function SettingsPage() {
                   <TabsTrigger value="seo">SEO</TabsTrigger>
                   <TabsTrigger value="social">Social Media</TabsTrigger>
                   <TabsTrigger value="homepage">Homepage</TabsTrigger>
+                  <TabsTrigger value="services">Services</TabsTrigger>
                   <TabsTrigger value="routing">Lead Routing</TabsTrigger>
                   <TabsTrigger value="email">Email Settings</TabsTrigger>
                   <TabsTrigger value="whatsapp">WhatsApp Settings</TabsTrigger>
                   <TabsTrigger value="footer">Footer Settings</TabsTrigger>
-                  <TabsTrigger value="media">Media Settings</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="general">
                   <FieldGroup>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <Field>
+                        <FieldLabel htmlFor="companyName">Company Name</FieldLabel>
+                        <Input id="companyName" name="companyName" defaultValue={companyValue.companyName ?? "TAAKSHVI Solution Hub"} />
+                      </Field>
+                      <Field>
+                        <FieldLabel htmlFor="legalName">Legal Name</FieldLabel>
+                        <Input id="legalName" name="legalName" defaultValue={companyValue.legalName ?? "Taakshvi Solution Hub"} />
+                      </Field>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <Field>
+                        <FieldLabel htmlFor="siteUrl">Site URL</FieldLabel>
+                        <Input id="siteUrl" name="siteUrl" defaultValue={companyValue.siteUrl ?? "https://taakshvisolutionhub.com"} />
+                      </Field>
+                      <Field>
+                        <FieldLabel htmlFor="tagline">Tagline</FieldLabel>
+                        <Input id="tagline" name="tagline" defaultValue={companyValue.tagline ?? ""} />
+                      </Field>
+                    </div>
+                    <Field>
+                      <FieldLabel htmlFor="description">Brand Description</FieldLabel>
+                      <Textarea id="description" name="description" rows={3} defaultValue={companyValue.description ?? ""} />
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="aboutHeadline">About Headline</FieldLabel>
+                      <Textarea id="aboutHeadline" name="aboutHeadline" rows={2} defaultValue={companyValue.aboutHeadline ?? ""} />
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="aboutDescription">About Description</FieldLabel>
+                      <Textarea id="aboutDescription" name="aboutDescription" rows={4} defaultValue={companyValue.aboutDescription ?? ""} />
+                    </Field>
                     <div className="grid gap-4 md:grid-cols-2">
                       <Field>
                         <FieldLabel htmlFor="phone">Primary Phone</FieldLabel>
@@ -88,9 +154,21 @@ export default async function SettingsPage() {
                         <Input id="email" name="email" defaultValue={contactValue.email ?? "namaste@taakshvisolutionhub.com"} />
                       </Field>
                     </div>
+                    <Field>
+                      <FieldLabel htmlFor="address">Address</FieldLabel>
+                      <Input id="address" name="address" defaultValue={contactValue.address ?? "Mumbai, Maharashtra, India"} />
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="citiesLabel">Cities Label</FieldLabel>
+                      <Input id="citiesLabel" name="citiesLabel" defaultValue={companyValue.citiesLabel ?? "Mumbai • Ahmedabad • Nasik • Lucknow"} />
+                    </Field>
                     <Field orientation="horizontal">
                       <Checkbox id="recentEnabled" name="recentEnabled" defaultChecked={recentValue.enabled ?? true} />
                       <FieldLabel htmlFor="recentEnabled">Enable recent enquiry widget</FieldLabel>
+                    </Field>
+                    <Field orientation="horizontal">
+                      <Checkbox id="recentLiveBadge" name="recentLiveBadge" defaultChecked={recentValue.liveBadge ?? true} />
+                      <FieldLabel htmlFor="recentLiveBadge">Show live badge on enquiry widget</FieldLabel>
                     </Field>
                     <Field>
                       <FieldLabel htmlFor="recentLimit">Recent enquiry records shown</FieldLabel>
@@ -109,6 +187,10 @@ export default async function SettingsPage() {
                       <FieldLabel htmlFor="seoDescription">Default Meta Description</FieldLabel>
                       <Input id="seoDescription" name="seoDescription" defaultValue={seoValue.description ?? ""} />
                     </Field>
+                    <Field>
+                      <FieldLabel htmlFor="seoOgImage">OG Image URL</FieldLabel>
+                      <Input id="seoOgImage" name="seoOgImage" defaultValue={seoValue.ogImage ?? ""} />
+                    </Field>
                   </FieldGroup>
                 </TabsContent>
 
@@ -126,20 +208,108 @@ export default async function SettingsPage() {
                       <FieldLabel htmlFor="linkedin">LinkedIn URL</FieldLabel>
                       <Input id="linkedin" name="linkedin" defaultValue={socialValue.linkedin ?? ""} />
                     </Field>
+                    <Field>
+                      <FieldLabel htmlFor="whatsappChannel">WhatsApp Channel URL</FieldLabel>
+                      <Input id="whatsappChannel" name="whatsappChannel" defaultValue={socialValue.whatsappChannel ?? ""} />
+                    </Field>
                   </FieldGroup>
                 </TabsContent>
 
                 <TabsContent value="homepage">
                   <FieldGroup>
                     <Field>
+                      <FieldLabel htmlFor="heroBadge">Hero Badge</FieldLabel>
+                      <Input id="heroBadge" name="heroBadge" defaultValue={homepageValue.heroBadge ?? ""} />
+                    </Field>
+                    <Field>
                       <FieldLabel htmlFor="heroHeadline">Hero Headline</FieldLabel>
                       <Input id="heroHeadline" name="heroHeadline" defaultValue={homepageValue.heroHeadline ?? ""} />
                     </Field>
                     <Field>
                       <FieldLabel htmlFor="heroSubheadline">Hero Subheadline</FieldLabel>
-                      <Input id="heroSubheadline" name="heroSubheadline" defaultValue={homepageValue.heroSubheadline ?? ""} />
+                      <Textarea id="heroSubheadline" name="heroSubheadline" rows={3} defaultValue={homepageValue.heroSubheadline ?? ""} />
+                    </Field>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <Field>
+                        <FieldLabel htmlFor="primaryCtaLabel">Primary CTA Label</FieldLabel>
+                        <Input id="primaryCtaLabel" name="primaryCtaLabel" defaultValue={homepageValue.primaryCtaLabel ?? "Request Callback"} />
+                      </Field>
+                      <Field>
+                        <FieldLabel htmlFor="secondaryCtaLabel">Secondary CTA Label</FieldLabel>
+                        <Input id="secondaryCtaLabel" name="secondaryCtaLabel" defaultValue={homepageValue.secondaryCtaLabel ?? "WhatsApp Now"} />
+                      </Field>
+                    </div>
+                    <Field>
+                      <FieldLabel htmlFor="servicesHeading">Services Section Heading</FieldLabel>
+                      <Input id="servicesHeading" name="servicesHeading" defaultValue={homepageValue.servicesHeading ?? ""} />
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="whyChooseHeading">Why Choose Us Heading</FieldLabel>
+                      <Input id="whyChooseHeading" name="whyChooseHeading" defaultValue={homepageValue.whyChooseHeading ?? ""} />
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="whyChooseIntro">Why Choose Us Intro</FieldLabel>
+                      <Textarea id="whyChooseIntro" name="whyChooseIntro" rows={3} defaultValue={homepageValue.whyChooseIntro ?? ""} />
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="mediaHeading">Media Heading</FieldLabel>
+                      <Input id="mediaHeading" name="mediaHeading" defaultValue={homepageValue.mediaHeading ?? ""} />
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="mediaIntro">Media Intro</FieldLabel>
+                      <Textarea id="mediaIntro" name="mediaIntro" rows={3} defaultValue={homepageValue.mediaIntro ?? ""} />
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="ctaTitle">Homepage CTA Title</FieldLabel>
+                      <Input id="ctaTitle" name="ctaTitle" defaultValue={homepageValue.ctaTitle ?? ""} />
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="ctaCopy">Homepage CTA Copy</FieldLabel>
+                      <Textarea id="ctaCopy" name="ctaCopy" rows={3} defaultValue={homepageValue.ctaCopy ?? ""} />
                     </Field>
                   </FieldGroup>
+                </TabsContent>
+
+                <TabsContent value="services">
+                  <div className="grid gap-4">
+                    {services.map((service) => (
+                      <Card key={service.id} className="border-border/70">
+                        <CardHeader>
+                          <CardTitle className="text-lg">{service.name}</CardTitle>
+                          <CardDescription>Edit the public-facing service card and detail-page summary.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="grid gap-4">
+                          <input type="hidden" name="serviceId" value={service.id} />
+                          <div className="grid gap-4 md:grid-cols-2">
+                            <Field>
+                              <FieldLabel>Name</FieldLabel>
+                              <Input name="serviceName" defaultValue={service.name} />
+                            </Field>
+                            <Field>
+                              <FieldLabel>Slug</FieldLabel>
+                              <Input name="serviceSlug" defaultValue={service.slug} />
+                            </Field>
+                          </div>
+                          <Field>
+                            <FieldLabel>Description</FieldLabel>
+                            <Textarea name="serviceDescription" rows={3} defaultValue={service.description} />
+                          </Field>
+                          <Field orientation="horizontal">
+                            <Checkbox id={`service-${service.id}`} name="serviceIsActive" value={service.id} defaultChecked={service.isActive} />
+                            <FieldLabel htmlFor={`service-${service.id}`}>Active on website</FieldLabel>
+                          </Field>
+                          <Button variant="destructive" type="submit" formAction={deleteService} name="id" value={service.id}>
+                            Delete Service
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                    <div className="flex justify-end">
+                      <Button type="submit" formAction={updateServices} className="w-fit">
+                        Save Services
+                      </Button>
+                    </div>
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="routing">
@@ -216,14 +386,26 @@ export default async function SettingsPage() {
                       <FieldLabel htmlFor="footerTrustHeading">Footer Trust Heading</FieldLabel>
                       <Input id="footerTrustHeading" name="footerTrustHeading" defaultValue={footerValue.trustHeading ?? "Why Clients Trust Us"} />
                     </Field>
-                  </FieldGroup>
-                </TabsContent>
-
-                <TabsContent value="media">
-                  <FieldGroup>
                     <Field>
-                      <FieldLabel htmlFor="mediaSectionHeading">Media Section Heading</FieldLabel>
-                      <Input id="mediaSectionHeading" name="mediaSectionHeading" defaultValue={mediaValue.sectionHeading ?? "Featured In"} />
+                      <FieldLabel htmlFor="footerTrustPoints">Footer Trust Points</FieldLabel>
+                      <Textarea
+                        id="footerTrustPoints"
+                        name="footerTrustPoints"
+                        rows={6}
+                        defaultValue={(footerValue.trustPoints ?? []).join("\n")}
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="footerNewsletterLabel">Newsletter Label</FieldLabel>
+                      <Input id="footerNewsletterLabel" name="footerNewsletterLabel" defaultValue={footerValue.newsletterLabel ?? "Newsletter Signup"} />
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="footerCtaTitle">Footer CTA Title</FieldLabel>
+                      <Input id="footerCtaTitle" name="footerCtaTitle" defaultValue={footerValue.ctaTitle ?? ""} />
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="footerCtaCopy">Footer CTA Copy</FieldLabel>
+                      <Textarea id="footerCtaCopy" name="footerCtaCopy" rows={3} defaultValue={footerValue.ctaCopy ?? ""} />
                     </Field>
                   </FieldGroup>
                 </TabsContent>
@@ -287,6 +469,34 @@ export default async function SettingsPage() {
               </div>
               <Button type="submit" className="w-fit">
                 Add Rule
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Add Service</CardTitle>
+            <CardDescription>Create a new service record that appears on the public website and in enquiry flows.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form action={createService} className="grid gap-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <Field>
+                  <FieldLabel htmlFor="service-name">Service Name</FieldLabel>
+                  <Input id="service-name" name="name" required />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="service-slug">Slug</FieldLabel>
+                  <Input id="service-slug" name="slug" required />
+                </Field>
+              </div>
+              <Field>
+                <FieldLabel htmlFor="service-description">Description</FieldLabel>
+                <Textarea id="service-description" name="description" rows={3} required />
+              </Field>
+              <Button type="submit" className="w-fit">
+                Add Service
               </Button>
             </form>
           </CardContent>

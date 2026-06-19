@@ -3,7 +3,7 @@
 import { useActionState, useMemo, useState } from "react"
 import { ArrowRightIcon, CheckCircle2Icon } from "lucide-react"
 
-import { serviceCategories } from "@/lib/site"
+import { useSiteData } from "@/components/marketing/site-data-provider"
 import { createLead, type LeadActionState } from "@/server/lead-actions"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -28,11 +28,12 @@ export function EnquiryForm({
   defaultService?: string
   variant?: "full" | "compact"
 }) {
+  const { services } = useSiteData()
   const [selectedService, setSelectedService] = useState(defaultService)
   const [state, action, pending] = useActionState(createLead, initialState)
   const service = useMemo(
-    () => serviceCategories.find((item) => item.slug === selectedService) ?? serviceCategories[0],
-    [selectedService]
+    () => services.find((item) => item.slug === selectedService) ?? services[0],
+    [selectedService, services]
   )
 
   return (
@@ -82,7 +83,7 @@ export function EnquiryForm({
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                {serviceCategories.map((item) => (
+                {services.map((item) => (
                   <SelectItem key={item.slug} value={item.slug}>
                     {item.name}
                   </SelectItem>

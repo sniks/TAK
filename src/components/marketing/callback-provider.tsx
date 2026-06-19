@@ -35,7 +35,7 @@ import {
   resolveLeadOwner,
   type PublicRoutingRule,
 } from "@/lib/routing-config"
-import { serviceCategories } from "@/lib/site"
+import { useSiteData } from "@/components/marketing/site-data-provider"
 
 type CallbackMode = "request-callback" | "whatsapp" | "email"
 
@@ -58,6 +58,7 @@ export function CallbackProvider({
   children: ReactNode
   routingRules?: PublicRoutingRule[]
 }) {
+  const { services, settings } = useSiteData()
   const [open, setOpen] = useState(false)
   const [service, setService] = useState("corporate-events")
   const [mode, setMode] = useState<CallbackMode>("request-callback")
@@ -80,15 +81,15 @@ export function CallbackProvider({
   )
 
   const selectedService =
-    serviceCategories.find((item) => item.slug === service)?.name ?? "Corporate Events"
+    services.find((item) => item.slug === service)?.name ?? services[0]?.name ?? "Corporate Events"
   const owner = resolveLeadOwner({ service, city }, routingRules)
-  const whatsappHref = `https://wa.me/${owner.whatsapp}?text=${buildWhatsAppMessage({
+  const whatsappHref = `https://wa.me/${owner.whatsapp || settings.primaryWhatsapp}?text=${buildWhatsAppMessage({
     name: name || "Visitor",
     service: selectedService,
     mobile: mobile || "Not shared",
     city: city || "Not shared",
   })}`
-  const emailHref = `mailto:${owner.email}?subject=Service Enquiry&body=${buildEmailBody({
+  const emailHref = `mailto:${owner.email || settings.primaryEmail}?subject=Service Enquiry&body=${buildEmailBody({
     name: name || "Visitor",
     service: selectedService,
     city: city || "Not shared",
@@ -152,7 +153,7 @@ export function CallbackProvider({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          {serviceCategories.map((item) => (
+                          {services.map((item) => (
                             <SelectItem key={item.slug} value={item.slug}>
                               {item.name}
                             </SelectItem>

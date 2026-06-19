@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/db"
-import { serviceCategories } from "@/lib/site"
 import { assignLeadOwnerSync, defaultLeadOwner, type LeadOwner } from "@/lib/routing-config"
 
 type RoutingInput = {
@@ -8,14 +7,12 @@ type RoutingInput = {
 }
 
 export async function assignLeadOwnerFromDatabase(input: RoutingInput): Promise<LeadOwner> {
-  const service = serviceCategories.find(
-    (item) => item.slug === input.service || item.name === input.service
-  )
   const city = input.city?.trim() ?? ""
-
-  if (!service) return defaultLeadOwner
-
-  const serviceRecord = await prisma.service.findUnique({ where: { slug: service.slug } })
+  const serviceRecord = await prisma.service.findFirst({
+    where: {
+      OR: [{ slug: input.service }, { name: input.service }],
+    },
+  })
   const rules = await prisma.leadRoutingRule.findMany({
     where: {
       isActive: true,
