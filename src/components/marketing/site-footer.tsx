@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link"
 import { Globe2Icon, LinkIcon, MailIcon, MapPinIcon, MessageCircleIcon, PhoneCallIcon } from "lucide-react"
 
