@@ -35,9 +35,16 @@ type AdminDashboardProps = {
     settings: number
   }
   leadTrend: Array<{ label: string; leads: number; qualified: number }>
+  auditLogs: Array<{
+    id: string
+    actor: string
+    action: string
+    entity: string
+    createdAt: string
+  }>
 }
 
-export function AdminDashboard({ metrics, leadRows, cmsCounts, leadTrend }: AdminDashboardProps) {
+export function AdminDashboard({ metrics, leadRows, cmsCounts, leadTrend, auditLogs }: AdminDashboardProps) {
   const modules = [
     ["Lead Management", `${metrics.total} lead records with status, ownership, and follow-up visibility.`, UsersIcon],
     ["Blog CMS", `${cmsCounts.blogs} published and draft blog records.`, FileTextIcon],
@@ -201,6 +208,47 @@ export function AdminDashboard({ metrics, leadRows, cmsCounts, leadTrend }: Admi
               </Table>
             </CardContent>
           </Card>
+          <div className="mt-6 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Activity</CardTitle>
+                <CardDescription>Latest content, settings, and routing changes recorded in the audit trail.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Actor</TableHead>
+                      <TableHead>Action</TableHead>
+                      <TableHead>Module</TableHead>
+                      <TableHead>Time</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {auditLogs.map((log) => (
+                      <TableRow key={log.id}>
+                        <TableCell>{log.actor}</TableCell>
+                        <TableCell>{log.action}</TableCell>
+                        <TableCell>{log.entity}</TableCell>
+                        <TableCell>{log.createdAt}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Operational Notes</CardTitle>
+                <CardDescription>Admin checkpoints that matter before launch.</CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-3 text-sm text-muted-foreground">
+                <div>Website settings now feed the public homepage, header, footer, contact page, and service pages.</div>
+                <div>Lead routing changes affect callback ownership, WhatsApp links, and email paths without code edits.</div>
+                <div>Blogs, news, gallery, testimonials, users, and media assets are now editable from admin.</div>
+              </CardContent>
+            </Card>
+          </div>
           <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {modules.map(([title, copy, Icon]) => (
               <Card key={title as string}>

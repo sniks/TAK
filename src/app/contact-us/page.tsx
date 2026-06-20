@@ -8,14 +8,16 @@ import { EnquiryForm } from "@/components/marketing/enquiry-form"
 import { Header } from "@/components/marketing/header"
 import { SiteFooter } from "@/components/marketing/site-footer"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { siteConfig } from "@/lib/site"
+import { getSiteSettings } from "@/lib/site-settings"
 
 export const metadata: Metadata = {
   title: "Contact Us",
   description: "Reach Taakshvi Solution Hub by callback, WhatsApp, email, or a fully tracked service enquiry.",
 }
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const settings = await getSiteSettings()
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -33,20 +35,20 @@ export default function ContactPage() {
               <div className="mt-8 grid items-stretch gap-4 sm:grid-cols-3">
                 <ContactCard
                   title="Call"
-                  copy={siteConfig.phone}
-                  href={`tel:${siteConfig.phone}`}
+                  copy={settings.primaryPhone}
+                  href={`tel:${settings.primaryPhone}`}
                   icon={<PhoneCallIcon />}
                 />
                 <ContactCard
                   title="WhatsApp"
                   copy="Instant service conversation"
-                  href={`https://wa.me/${siteConfig.phone}?text=Hello%20Team%2C%20I%20would%20like%20to%20discuss%20a%20service%20requirement.`}
+                  href={`https://wa.me/${settings.primaryWhatsapp}?text=Hello%20Team%2C%20I%20would%20like%20to%20discuss%20a%20service%20requirement.`}
                   icon={<MessageCircleIcon />}
                 />
                 <ContactCard
                   title="Email"
-                  copy={siteConfig.email}
-                  href={`mailto:${siteConfig.email}`}
+                  copy={settings.primaryEmail}
+                  href={`mailto:${settings.primaryEmail}`}
                   icon={<MailIcon />}
                 />
               </div>

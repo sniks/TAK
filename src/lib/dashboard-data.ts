@@ -93,6 +93,35 @@ export async function getLeadTrend() {
   })
 }
 
+export async function getRecentAuditLogs(limit = 8) {
+  const logs = await prisma.auditLog.findMany({
+    take: limit,
+    orderBy: { createdAt: "desc" },
+  })
+
+  const actorIds = logs.map((log) => log.actorId).filter((id): id is string => Boolean(id))
+  const actors = actorIds.length
+    ? await prisma.user.findMany({
+        where: { id: { in: actorIds } },
+        select: { id: true, name: true, email: true },
+      })
+    : []
+  const actorMap = new Map(actors.map((actor) => [actor.id, actor]))
+
+  return logs.map((log) => ({
+    id: log.id,
+    actor: actorMap.get(log.actorId ?? "")?.name || actorMap.get(log.actorId ?? "")?.email || "System",
+    action: log.action,
+    entity: log.entity,
+    createdAt: log.createdAt.toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+  }))
+}
+
 function formatRelativeLeadTime(date: Date) {
   const diffMinutes = Math.max(1, Math.round((Date.now() - date.getTime()) / 60000))
   if (diffMinutes < 60) return `${diffMinutes} mins ago`
@@ -100,4 +129,3 @@ function formatRelativeLeadTime(date: Date) {
   if (diffHours < 24) return `${diffHours} hrs ago`
   return `${Math.round(diffHours / 24)} days ago`
 }
-

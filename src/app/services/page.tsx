@@ -8,7 +8,7 @@ import { Header } from "@/components/marketing/header"
 import { SiteFooter } from "@/components/marketing/site-footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { serviceCategories } from "@/lib/site"
+import { getPublicServices, getSiteSettings } from "@/lib/site-settings"
 
 export const metadata: Metadata = {
   title: "Services",
@@ -22,7 +22,9 @@ const featuredGroups = [
   "Property, finance, astrology, and lifestyle services",
 ]
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const [services, settings] = await Promise.all([getPublicServices(), getSiteSettings()])
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -74,14 +76,14 @@ export default function ServicesPage() {
           <div className="mb-8 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--brand-pink)]">Service Categories</div>
-              <h2 className="mt-3 text-3xl font-semibold text-[var(--brand-navy)]">Choose the service flow that fits your requirement</h2>
+              <h2 className="mt-3 text-3xl font-semibold text-[var(--brand-navy)]">{settings.homepage.servicesHeading}</h2>
             </div>
             <p className="max-w-2xl text-sm leading-7 text-muted-foreground">
               Each page has its own context, enquiry path, and service guidance rather than feeling like a generic card list.
             </p>
           </div>
           <div className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {serviceCategories.map((service, index) => (
+            {services.map((service, index) => (
               <Card key={service.slug} className="group h-full overflow-hidden border-border/80 bg-white transition hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-950/10">
                 <CardHeader>
                   <div

@@ -5,6 +5,8 @@ import { ArrowRightIcon, CheckCircle2Icon, MessageCircleIcon } from "lucide-reac
 import { toast } from "sonner"
 
 import { serviceCategories } from "@/lib/site"
+import { useSiteData } from "@/components/marketing/site-data-provider"
+import { createLead, type LeadActionState } from "@/server/lead-actions"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field"
@@ -37,13 +39,17 @@ export function EnquiryForm({
   defaultService?: string
   variant?: "full" | "compact"
 }) {
+<<<<<<< HEAD
   const formRef = useRef<HTMLFormElement | null>(null)
   const requestIdRef = useRef<string>("")
+=======
+  const { services } = useSiteData()
+>>>>>>> 9bf5a1aedc66c65053fa88dcdca22aed9d43af89
   const [selectedService, setSelectedService] = useState(defaultService)
   const [pending, setPending] = useState(false)
   const service = useMemo(
-    () => serviceCategories.find((item) => item.slug === selectedService) ?? serviceCategories[0],
-    [selectedService]
+    () => services.find((item) => item.slug === selectedService) ?? services[0],
+    [selectedService, services]
   )
 
   return (
@@ -181,7 +187,7 @@ export function EnquiryForm({
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                {serviceCategories.map((item) => (
+                {services.map((item) => (
                   <SelectItem key={item.slug} value={item.slug}>
                     {item.name}
                   </SelectItem>

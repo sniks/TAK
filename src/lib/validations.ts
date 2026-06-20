@@ -1,16 +1,6 @@
 import { z } from "zod"
 
-import { serviceCategories } from "@/lib/site"
-
-export const serviceSlugs = serviceCategories.map((service) => service.slug) as [
-  string,
-  ...string[],
-]
-
-export const enquirySubmissionTypes = ["callback", "whatsapp"] as const
-
-export const enquiryFormSchema = z.object({
-  requestId: z.string().min(8).optional(),
+export const leadFormSchema = z.object({
   fullName: z.string().min(2, "Full name is required").max(120),
   mobile: z.string().min(8, "Mobile number is required").max(20),
   whatsapp: z.string().max(20).optional(),

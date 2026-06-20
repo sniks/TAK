@@ -26,13 +26,13 @@ import {
 import { CallbackButton } from "@/components/marketing/callback-button"
 import { EnquiryForm } from "@/components/marketing/enquiry-form"
 import { Header } from "@/components/marketing/header"
+import { useSiteData } from "@/components/marketing/site-data-provider"
 import { SiteFooter } from "@/components/marketing/site-footer"
 import { TestimonialsCarousel } from "@/components/marketing/testimonials-carousel"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { serviceCategories } from "@/lib/site"
 
 type RecentEnquiry = {
   id: string
@@ -49,6 +49,14 @@ type TestimonialItem = {
   rating: number
   review: string
   photo?: string | null
+}
+
+type MediaItem = {
+  id: string
+  title: string
+  source: string | null
+  href: string | null
+  description: string
 }
 
 const serviceIcons = [
@@ -122,22 +130,16 @@ const mediaCoverage = [
   },
 ]
 
-const homepageServiceCategories = [
-  ...serviceCategories,
-  {
-    name: "Website & Software Development",
-    slug: "website-software-development",
-    href: "/services",
-  },
-] as const
-
 export function HomePage({
   recentEnquiries,
   testimonials,
+  mediaItems,
 }: {
   recentEnquiries: RecentEnquiry[]
   testimonials: TestimonialItem[]
+  mediaItems: MediaItem[]
 }) {
+  const { settings, services } = useSiteData()
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
   const smoothX = useSpring(mouseX, { stiffness: 80, damping: 18 })
@@ -170,17 +172,23 @@ export function HomePage({
           <div className="relative mx-auto grid w-full max-w-[1540px] gap-6 px-4 pb-10 pt-8 sm:px-6 lg:grid-cols-[0.96fr_0.98fr_0.82fr] lg:px-8 lg:pb-0 lg:pt-7">
             <div className="flex flex-col justify-start gap-7 py-12 lg:min-h-[510px]">
               <div className="w-fit rounded-full border border-pink-100 bg-white/75 px-4 py-2 text-sm font-medium text-[var(--brand-pink)] shadow-sm backdrop-blur">
-                Events. Travel. Branding. Wellness. Real Estate & More.
+                {settings.homepage.heroBadge}
               </div>
               <div className="flex flex-col gap-5">
                 <h1 className="max-w-3xl text-4xl font-semibold leading-[1.03] text-[var(--brand-navy)] sm:text-5xl xl:text-[4.4rem]">
-                  Your Trusted Partner for Experiences that{" "}
-                  <span className="bg-[linear-gradient(90deg,var(--brand-pink),var(--brand-blue),var(--brand-green))] bg-clip-text text-transparent">
-                    Inspire & Deliver
-                  </span>
+                  {settings.homepage.heroHeadline.includes("Inspire & Deliver") ? (
+                    <>
+                      {settings.homepage.heroHeadline.replace("Inspire & Deliver", "")}
+                      <span className="bg-[linear-gradient(90deg,var(--brand-pink),var(--brand-blue),var(--brand-green))] bg-clip-text text-transparent">
+                        Inspire & Deliver
+                      </span>
+                    </>
+                  ) : (
+                    settings.homepage.heroHeadline
+                  )}
                 </h1>
                 <p className="max-w-xl text-base leading-8 text-muted-foreground">
-                  Corporate events, luxury travel, wellness retreats, real estate, branding, finance, and more, brought together through one trusted premium service hub.
+                  {settings.homepage.heroSubheadline}
                 </p>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row">
@@ -188,16 +196,16 @@ export function HomePage({
                   className="h-12 bg-[var(--brand-pink)] px-7 text-white hover:bg-[color-mix(in_oklab,var(--brand-pink),black_8%)]"
                   size="lg"
                 >
-                  Request Callback
+                  {settings.homepage.primaryCtaLabel}
                   <ArrowRightIcon data-icon="inline-end" />
                 </CallbackButton>
                 <Button
                   className="h-12 border-[var(--brand-green)] text-[var(--brand-green)] hover:bg-[color-mix(in_oklab,var(--brand-green),white_88%)]"
                   size="lg"
-                  render={<a href="https://wa.me/7977938960?text=Hello%20Team%2C%20I%20am%20interested%20in%20Taakshvi%20services." />}
+                  render={<a href={`https://wa.me/${settings.primaryWhatsapp}?text=Hello%20Team%2C%20I%20am%20interested%20in%20Taakshvi%20services.`} />}
                   variant="outline"
                 >
-                  WhatsApp Now
+                  {settings.homepage.secondaryCtaLabel}
                 </Button>
                 <Button variant="outline" size="lg" className="h-12 px-7" render={<Link href="/services" />}>
                   Explore Services
@@ -250,7 +258,7 @@ export function HomePage({
 
           <div className="relative mx-auto mt-10 w-full max-w-[1320px] px-4 sm:px-6">
             <div className="grid auto-rows-fr grid-cols-2 gap-px overflow-hidden rounded-[1.75rem] border border-border bg-border shadow-xl shadow-blue-950/8 backdrop-blur sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7">
-              {homepageServiceCategories.map((service, index) => {
+              {serviceCategories.map((service, index) => {
                 const Icon = serviceIcons[index] ?? StarIcon
                 const href = "href" in service ? service.href : `/services/${service.slug}`
                 return (
@@ -295,7 +303,7 @@ export function HomePage({
             </div>
           </div>
           <div className="grid items-stretch gap-4 sm:grid-cols-2">
-            {serviceCategories.slice(0, 8).map((service, index) => {
+            {services.slice(0, 8).map((service, index) => {
               const Icon = serviceIcons[index] ?? StarIcon
               return (
                 <Link key={service.slug} href={`/services/${service.slug}`}>
@@ -319,10 +327,10 @@ export function HomePage({
             <div className="mb-8 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--brand-pink)]">Why Choose Taakshvi</div>
-                <h2 className="mt-3 text-3xl font-semibold text-[var(--brand-navy)]">A more dependable way to discover and coordinate premium services.</h2>
+                <h2 className="mt-3 text-3xl font-semibold text-[var(--brand-navy)]">{settings.homepage.whyChooseHeading}</h2>
               </div>
               <p className="max-w-2xl text-sm leading-7 text-muted-foreground">
-                The public experience should build trust immediately. These are the reasons clients feel confident reaching out.
+                {settings.homepage.whyChooseIntro}
               </p>
             </div>
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -346,9 +354,9 @@ export function HomePage({
         <section className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[0.82fr_1.18fr] lg:px-8">
           <div className="flex flex-col justify-center gap-5">
             <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--brand-pink)]">Start Your Enquiry</div>
-            <h2 className="text-3xl font-semibold text-[var(--brand-navy)]">Share your requirement and let our team take it forward.</h2>
+            <h2 className="text-3xl font-semibold text-[var(--brand-navy)]">{settings.homepage.ctaTitle}</h2>
             <p className="text-base leading-8 text-muted-foreground">
-              Whether you are planning a corporate event, retreat, travel requirement, property need, or consultation-led service, we begin with a clear understanding of what matters to you.
+              {settings.homepage.ctaCopy}
             </p>
             <Separator />
             <div className="grid gap-3 text-sm text-muted-foreground">
@@ -387,20 +395,20 @@ export function HomePage({
           <div className="mb-8 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--brand-pink)]">Featured In</div>
-              <h2 className="mt-3 text-3xl font-semibold text-[var(--brand-navy)]">Media coverage and public references</h2>
+              <h2 className="mt-3 text-3xl font-semibold text-[var(--brand-navy)]">{settings.homepage.mediaHeading}</h2>
             </div>
             <p className="max-w-2xl text-sm leading-7 text-muted-foreground">
-              Credible public references help visitors understand that the brand is active, visible, and professionally managed.
+              {settings.homepage.mediaIntro}
             </p>
           </div>
           <div className="grid gap-4 md:grid-cols-3">
-            {mediaCoverage.map((item) => (
+            {mediaItems.map((item) => (
               <Card key={item.title} className="h-full bg-white shadow-lg shadow-blue-950/6">
                 <CardHeader>
-                  <Badge variant="secondary">{item.source}</Badge>
+                  <Badge variant="secondary">{item.source ?? "Coverage"}</Badge>
                   <CardTitle className="leading-tight">{item.title}</CardTitle>
                   <CardDescription className="leading-7">{item.description}</CardDescription>
-                  <Button variant="outline" className="mt-4 w-fit" render={<a href={item.href} target="_blank" rel="noreferrer" />}>
+                  <Button variant="outline" className="mt-4 w-fit" render={<a href={item.href ?? "/news"} target="_blank" rel="noreferrer" />}>
                     Read More
                     <ArrowRightIcon data-icon="inline-end" />
                   </Button>
@@ -416,6 +424,12 @@ export function HomePage({
 }
 
 function RecentEnquiriesWidget({ enquiries }: { enquiries: RecentEnquiry[] }) {
+  const { settings } = useSiteData()
+
+  if (!settings.recentEnquiries.enabled) {
+    return null
+  }
+
   return (
     <div className="fixed bottom-4 left-4 right-4 z-40 rounded-2xl border border-border bg-white/95 p-4 shadow-2xl shadow-blue-950/12 backdrop-blur-xl sm:left-auto sm:right-4 sm:w-[21rem] lg:bottom-8 lg:right-8 lg:w-80">
       <div className="mb-3 flex items-center justify-between">
@@ -423,9 +437,11 @@ function RecentEnquiriesWidget({ enquiries }: { enquiries: RecentEnquiry[] }) {
           <span className="size-2 rounded-full bg-[var(--brand-green)]" />
           Recent Enquiries
         </div>
-        <Badge variant="secondary" className="text-[var(--brand-pink)]">
-          Live
-        </Badge>
+        {settings.recentEnquiries.liveBadge ? (
+          <Badge variant="secondary" className="text-[var(--brand-pink)]">
+            Live
+          </Badge>
+        ) : null}
       </div>
       <div className="grid gap-3">
         {enquiries.length ? (
