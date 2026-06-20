@@ -16,9 +16,14 @@ export async function POST(request: Request) {
       service: typeof payload.service === "string" ? payload.service : "",
       message: typeof payload.message === "string" ? payload.message : "",
       submissionType:
-        payload.submissionType === "whatsapp" || payload.submissionType === "callback"
+        payload.submissionType === "whatsapp" ||
+        payload.submissionType === "callback" ||
+        payload.submissionType === "email" ||
+        payload.submissionType === "call"
           ? payload.submissionType
           : "callback",
+      source: typeof payload.source === "string" ? payload.source : "Website",
+      ctaType: typeof payload.ctaType === "string" ? payload.ctaType : undefined,
       consentAccepted: typeof payload.consentAccepted === "string" ? payload.consentAccepted : "off",
       servicePayload: (() => {
         if (!payload.servicePayload || typeof payload.servicePayload !== "object") {
@@ -26,6 +31,16 @@ export async function POST(request: Request) {
         }
 
         const entries = Object.entries(payload.servicePayload).filter(
+          (entry): entry is [string, string] => typeof entry[1] === "string"
+        )
+        return Object.fromEntries(entries)
+      })(),
+      campaignData: (() => {
+        if (!payload.campaignData || typeof payload.campaignData !== "object") {
+          return {}
+        }
+
+        const entries = Object.entries(payload.campaignData).filter(
           (entry): entry is [string, string] => typeof entry[1] === "string"
         )
         return Object.fromEntries(entries)

@@ -28,6 +28,14 @@ enum UserRoleName {
   CONTENT_MANAGER
 }
 
+enum EmailDeliveryStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+  RETRYING
+}
+
 model User {
   id            String           @id @default(cuid())
   name          String
@@ -148,8 +156,21 @@ model Lead {
   consentAccepted Boolean
   status          LeadStatus       @default(NEW)
   source          String           @default("Website")
+  ctaType         String?
+  campaignData    Json?
   assignedMobile  String
   assignedEmail   String
+  routingWhatsapp String?
+  routingReason   String?
+  emailStatus     EmailDeliveryStatus @default(PENDING)
+  emailMessageId  String?
+  emailProviderResponse Json?
+  emailSentAt     DateTime?
+  emailLastAttemptAt DateTime?
+  emailRetryCount Int              @default(0)
+  emailRetryHistory Json?
+  emailLastError  String?
+  emailNextRetryAt DateTime?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   assignments     LeadAssignment[]
@@ -160,6 +181,8 @@ model Lead {
   @@index([status, createdAt])
   @@index([serviceId, city])
   @@index([assignedMobile])
+  @@index([emailStatus, emailNextRetryAt])
+  @@index([source, createdAt])
 }
 
 model LeadAssignment {
@@ -202,14 +225,22 @@ model Followup {
   id        String   @id @default(cuid())
   leadId    String
   userId    String?
+  type      String   @default("Initial Contact")
+  status    String   @default("Pending")
+  priority  String   @default("High")
   dueAt     DateTime
   notes     String
+  ownerName String?
+  assignedMobile String?
+  assignedEmail String?
   completed Boolean  @default(false)
+  completedAt DateTime?
   createdAt DateTime @default(now())
   lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
   user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([dueAt, completed])
+  @@index([status, priority, dueAt])
 }
 
 model BlogPost {

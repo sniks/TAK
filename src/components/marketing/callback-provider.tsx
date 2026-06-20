@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react"
 import { MailIcon, MessageCircleIcon, PhoneCallIcon } from "lucide-react"
+import { toast } from "sonner"
 
 import { EnquiryForm } from "@/components/marketing/enquiry-form"
 import { Button } from "@/components/ui/button"
@@ -29,24 +30,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import {
-  buildEmailBody,
-  buildWhatsAppMessage,
-  resolveLeadOwner,
-  type PublicRoutingRule,
-} from "@/lib/routing-config"
+import { resolveLeadOwner, type PublicRoutingRule } from "@/lib/routing-config"
 import { useSiteData } from "@/components/marketing/site-data-provider"
+import { createClientRequestId } from "@/lib/client-id"
 
-type CallbackMode = "request-callback" | "whatsapp" | "email"
+type CallbackMode = "request-callback" | "whatsapp" | "email" | "call"
 
 type CallbackContextValue = {
-  openCallback: (options?: { service?: string }) => void
+  openCallback: (options?: {
+    service?: string
+    mode?: CallbackMode
+    source?: string
+    ctaType?: string
+  }) => void
 }
 
 const modeOptions = [
   { value: "request-callback" as const, label: "Request Callback", icon: PhoneCallIcon },
   { value: "whatsapp" as const, label: "WhatsApp", icon: MessageCircleIcon },
   { value: "email" as const, label: "Email", icon: MailIcon },
+  { value: "call" as const, label: "Call", icon: PhoneCallIcon },
 ]
 
 const CallbackContext = createContext<CallbackContextValue | null>(null)
@@ -58,21 +61,32 @@ export function CallbackProvider({
   children: ReactNode
   routingRules?: PublicRoutingRule[]
 }) {
-  const { services, settings } = useSiteData()
+  const { services } = useSiteData()
   const [open, setOpen] = useState(false)
   const [service, setService] = useState("corporate-events")
   const [mode, setMode] = useState<CallbackMode>("request-callback")
   const [name, setName] = useState("")
   const [mobile, setMobile] = useState("")
+  const [email, setEmail] = useState("")
   const [city, setCity] = useState("")
   const [requirements, setRequirements] = useState("")
+  const [source, setSource] = useState("Callback Modal")
+  const [ctaType, setCtaType] = useState("callback")
+  const [pending, setPending] = useState(false)
 
   const value = useMemo<CallbackContextValue>(
     () => ({
       openCallback: (options) => {
         startTransition(() => {
           setService(options?.service ?? "corporate-events")
-          setMode("request-callback")
+          setMode(options?.mode ?? "request-callback")
+          setName("")
+          setMobile("")
+          setEmail("")
+          setCity("")
+          setRequirements("")
+          setSource(options?.source ?? "Callback Modal")
+          setCtaType(options?.ctaType ?? (options?.mode ?? "request-callback"))
           setOpen(true)
         })
       },
@@ -83,18 +97,82 @@ export function CallbackProvider({
   const selectedService =
     services.find((item) => item.slug === service)?.name ?? services[0]?.name ?? "Corporate Events"
   const owner = resolveLeadOwner({ service, city }, routingRules)
-  const whatsappHref = `https://wa.me/${owner.whatsapp || settings.primaryWhatsapp}?text=${buildWhatsAppMessage({
-    name: name || "Visitor",
-    service: selectedService,
-    mobile: mobile || "Not shared",
-    city: city || "Not shared",
-  })}`
-  const emailHref = `mailto:${owner.email || settings.primaryEmail}?subject=Service Enquiry&body=${buildEmailBody({
-    name: name || "Visitor",
-    service: selectedService,
-    city: city || "Not shared",
-    requirements,
-  })}`
+
+  async function submitTrackedCta() {
+    if (!name.trim() || !mobile.trim() || !email.trim() || !city.trim() || !requirements.trim()) {
+      toast.error("Name, mobile, email, city, and requirement are required.")
+      return
+    }
+
+    setPending(true)
+    const popup = window.open("", mode === "call" ? "_self" : "_blank")
+    if (popup && mode !== "call") {
+      popup.document.write(
+        "<!doctype html><html><head><title>Opening contact path</title></head><body style='font-family:Arial,sans-serif;padding:16px'>Preparing your contact path...</body></html>"
+      )
+      popup.document.close()
+    }
+
+    try {
+      const response = await fetch("/api/enquiries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requestId: createClientRequestId(),
+          fullName: name,
+          mobile,
+          email,
+          city,
+          message: requirements,
+          service,
+          submissionType:
+            mode === "request-callback" ? "callback" : mode,
+          source,
+          ctaType,
+          consentAccepted: "on",
+          servicePayload: {},
+          campaignData: {},
+        }),
+      })
+
+      const result = (await response.json()) as {
+        ok: boolean
+        message: string
+        redirectUrl?: string
+        warning?: string
+      }
+
+      if (!response.ok || !result.ok) {
+        toast.error(result.message || "We could not save your enquiry right now.")
+        if (popup && mode !== "call") popup.close()
+        return
+      }
+
+      if (result.warning) {
+        toast.warning(result.warning)
+      }
+
+      toast.success(result.message)
+      setOpen(false)
+
+      if (result.redirectUrl) {
+        if (mode === "call") {
+          window.location.assign(result.redirectUrl)
+        } else if (popup) {
+          popup.location.href = result.redirectUrl
+          popup.focus()
+        } else {
+          window.location.assign(result.redirectUrl)
+        }
+      }
+    } catch (error) {
+      console.error("Failed to submit tracked CTA", error)
+      toast.error("We could not save your enquiry right now. Please try again.")
+      if (popup && mode !== "call") popup.close()
+    } finally {
+      setPending(false)
+    }
+  }
 
   return (
     <CallbackContext.Provider value={value}>
@@ -127,7 +205,12 @@ export function CallbackProvider({
             </div>
 
             {mode === "request-callback" ? (
-              <EnquiryForm defaultService={service} variant="compact" />
+              <EnquiryForm
+                defaultService={service}
+                variant="compact"
+                source={source}
+                ctaType={ctaType}
+              />
             ) : (
               <FieldGroup>
                 <div className="grid gap-4 md:grid-cols-2">
@@ -142,10 +225,14 @@ export function CallbackProvider({
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
                   <Field>
+                    <FieldLabel htmlFor="callback-email">Email</FieldLabel>
+                    <Input id="callback-email" value={email} onChange={(event) => setEmail(event.target.value)} />
+                  </Field>
+                  <Field>
                     <FieldLabel htmlFor="callback-city">City</FieldLabel>
                     <Input id="callback-city" value={city} onChange={(event) => setCity(event.target.value)} />
                   </Field>
-                  <Field>
+                  <Field className="md:col-span-2">
                     <FieldLabel>Selected Service</FieldLabel>
                     <Select value={service} onValueChange={(value) => value && setService(value)}>
                       <SelectTrigger className="w-full">
@@ -175,11 +262,18 @@ export function CallbackProvider({
                   Best contact number for {selectedService}: {owner.mobile}
                 </div>
                 <Button
-                  onClick={() => setOpen(false)}
-                  render={<a href={mode === "whatsapp" ? whatsappHref : emailHref} />}
+                  disabled={pending}
+                  onClick={submitTrackedCta}
                   className="bg-[var(--brand-pink)] text-white hover:bg-[color-mix(in_oklab,var(--brand-pink),black_8%)]"
+                  type="button"
                 >
-                  {mode === "whatsapp" ? "Open WhatsApp" : "Open Email Client"}
+                  {pending
+                    ? "Saving enquiry..."
+                    : mode === "whatsapp"
+                      ? "Open WhatsApp"
+                      : mode === "email"
+                        ? "Open Email Client"
+                        : "Call Now"}
                 </Button>
               </FieldGroup>
             )}

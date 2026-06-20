@@ -89,6 +89,13 @@ const services = [
     serviceWhatsappNumber: "8460623469",
   },
   {
+    name: "Website & Software Development",
+    slug: "website-software-development",
+    description: "Websites, CRM, ERP, mobile apps, custom software, cloud systems, and digital transformation delivery.",
+    serviceEmail: "namaste@taakshvisolutionhub.com",
+    serviceWhatsappNumber: "7977938960",
+  },
+  {
     name: "Other",
     slug: "other",
     description: "Custom requirements routed to the right Taakshvi team member.",
@@ -114,6 +121,7 @@ const routingRules = [
   { serviceSlug: "finance", mobile: "9326277096", whatsapp: "9326277096", reason: "Finance" },
   { serviceSlug: "tours-travel", mobile: "8460623469", whatsapp: "8460623469", reason: "Travel" },
   { serviceSlug: "health-wellness", mobile: "8460623469", whatsapp: "8460623469", reason: "Health & Wellness" },
+  { serviceSlug: "website-software-development", mobile: "7977938960", whatsapp: "7977938960", reason: "Website & Software Development" },
   { serviceSlug: "real-estate", city: "Ahmedabad", mobile: "8460623469", whatsapp: "8460623469", reason: "Real Estate Ahmedabad" },
   { serviceSlug: "real-estate", mobile: "7977938960", whatsapp: "7977938960", reason: "Real Estate Other" },
   { mobile: "7977938960", whatsapp: "7977938960", reason: "Default" },
@@ -393,6 +401,142 @@ A single CRM view helps teams preserve context while keeping ownership visible.
 It also improves reporting, content planning, and follow-up quality because activity is not scattered across personal tools.
 
 For multi-service brands, central visibility is not just an admin feature. It is part of the customer experience.`,
+  },
+  {
+    slug: "benefits-of-a-business-website",
+    title: "10 Benefits of a Business Website",
+    shortDescription: "Why a serious business website still matters for trust, lead capture, and operational clarity.",
+    tags: ["Website Development", "Digital Presence", "Growth"],
+    publishDate: "2026-06-20",
+    content: `A business website is not just a brochure. It is usually the first place a serious prospect decides whether your company looks credible enough to contact.
+
+A strong website improves trust, gives the sales team a cleaner starting point, supports SEO, captures leads outside business hours, and reduces repetitive explanation.
+
+It also helps unify positioning. If your service, offer, process, and proof are not clearly visible online, every new lead starts from confusion.
+
+For growing brands, the website should work as a business asset: part sales tool, part credibility layer, part conversion system.
+
+That is why even referral-heavy businesses eventually hit a ceiling when the website is weak or absent.`,
+  },
+  {
+    slug: "how-crm-software-improves-productivity",
+    title: "How CRM Software Improves Productivity",
+    shortDescription: "The practical link between CRM discipline and faster team execution.",
+    tags: ["CRM", "Productivity", "Operations"],
+    publishDate: "2026-06-19",
+    content: `CRM software improves productivity when it removes guesswork from lead ownership, follow-up timing, deal stage visibility, and reporting.
+
+The gain is not only speed. It is also fewer dropped conversations, better accountability, and cleaner handoff between sales and operations.
+
+Without a CRM, work often lives in chat threads, personal notes, and memory. That setup does not scale.
+
+The right CRM does not just record activity. It shapes better behavior by making next actions visible to the team.`,
+  },
+  {
+    slug: "custom-software-vs-off-the-shelf-software",
+    title: "Custom Software vs Off-The-Shelf Software",
+    shortDescription: "When businesses should buy standard software and when they should build around their own workflow.",
+    tags: ["Custom Software", "Decision Making", "Operations"],
+    publishDate: "2026-06-18",
+    content: `Off-the-shelf software is faster to adopt and usually cheaper at the start. Custom software becomes valuable when the business has specific workflows that standard tools force into awkward compromises.
+
+The real decision is not build versus buy in the abstract. It is whether the business process is common enough to fit a product or distinct enough to justify its own system.
+
+Custom software makes sense when workflow friction is already costing time, visibility, or customer experience.
+
+Good decision-making starts by mapping the process honestly before choosing the tool.`,
+  },
+  {
+    slug: "why-every-startup-needs-a-website",
+    title: "Why Every Startup Needs a Website",
+    shortDescription: "A startup website is part credibility signal, part learning system, and part sales infrastructure.",
+    tags: ["Startups", "Website Development", "Growth"],
+    publishDate: "2026-06-17",
+    content: `Startups often delay their website because product, hiring, and operations feel more urgent. That is a mistake once external credibility starts to matter.
+
+A startup website gives investors, prospects, partners, and candidates a stable place to understand what the company does and why it matters.
+
+It also helps the team test positioning. The way the offer is presented online often reveals gaps in message clarity.
+
+The website does not need to be large. It does need to be intentional.`,
+  },
+  {
+    slug: "top-trends-in-web-development",
+    title: "Top Trends in Web Development",
+    shortDescription: "The trends worth paying attention to for modern, conversion-focused business websites and web apps.",
+    tags: ["Web Development", "Technology", "Product"],
+    publishDate: "2026-06-16",
+    content: `Useful web trends are the ones that improve speed, maintainability, SEO, analytics, or user experience.
+
+Teams are paying closer attention to performance budgets, server-first rendering where it helps, typed APIs, cleaner CMS workflows, and stronger analytics instrumentation.
+
+Another visible shift is business focus. More companies want websites and applications that support operations, not only design presentation.
+
+Trend-following is only valuable when it improves the product outcome.`,
+  },
+  {
+    slug: "erp-vs-crm-explained",
+    title: "ERP vs CRM Explained",
+    shortDescription: "A simple comparison of two systems businesses often confuse while planning digital transformation.",
+    tags: ["ERP", "CRM", "Digital Transformation"],
+    publishDate: "2026-06-15",
+    content: `CRM is primarily about managing leads, customers, deals, and relationship activity. ERP is broader operational infrastructure covering functions such as inventory, finance, procurement, and internal process control.
+
+Some businesses need one before the other. Some need both integrated.
+
+The mistake is choosing based on labels without identifying the actual bottleneck. If the problem is lead follow-up, start with CRM. If the problem is operational coordination, ERP may be the right center of gravity.
+
+The software should follow the process problem, not the buzzword.`,
+  },
+  {
+    slug: "benefits-of-mobile-apps-for-businesses",
+    title: "Benefits of Mobile Apps for Businesses",
+    shortDescription: "Where mobile apps create real business value instead of becoming vanity projects.",
+    tags: ["Mobile Apps", "Business", "Customer Experience"],
+    publishDate: "2026-06-14",
+    content: `Mobile apps are valuable when users need repeat access, notifications, offline behavior, field workflows, or faster transaction loops than a browser experience can comfortably provide.
+
+For some businesses, a responsive website is enough. For others, especially where daily engagement matters, an app becomes a meaningful operations and retention tool.
+
+The point is not to launch an app for prestige. It is to support a user behavior the business actually needs.`,
+  },
+  {
+    slug: "digital-transformation-for-smes",
+    title: "Digital Transformation for SMEs",
+    shortDescription: "A practical approach to improving operations without drowning a growing business in unnecessary software complexity.",
+    tags: ["SME", "Digital Transformation", "Operations"],
+    publishDate: "2026-06-13",
+    content: `For SMEs, digital transformation should begin with friction, not fashion.
+
+Find the points where work is delayed, duplicated, or invisible. Then decide whether the answer is a better website, a CRM, a dashboard, an internal approval tool, or a more connected data flow.
+
+The best transformation programs are incremental and grounded in business reality. They improve one important workflow at a time instead of imposing a grand system that nobody uses properly.`,
+  },
+  {
+    slug: "ai-in-business-operations",
+    title: "AI in Business Operations",
+    shortDescription: "Where AI can support productivity, speed, and decision quality inside everyday business systems.",
+    tags: ["AI", "Operations", "Automation"],
+    publishDate: "2026-06-12",
+    content: `AI becomes useful in business operations when it reduces repetitive effort, improves routing, summarizes messy information, or speeds up decision support.
+
+That can include lead qualification assistance, content drafting, support workflow classification, reporting summaries, and internal search.
+
+The right question is not whether AI is trendy. It is whether the business has a repeatable information problem that AI can handle with acceptable reliability.`,
+  },
+  {
+    slug: "website-maintenance-best-practices",
+    title: "Website Maintenance Best Practices",
+    shortDescription: "Why websites need ongoing operational attention after launch and what to maintain first.",
+    tags: ["Website Maintenance", "Performance", "Security"],
+    publishDate: "2026-06-11",
+    content: `A launched website is not finished infrastructure.
+
+Maintenance protects uptime, security, page speed, form reliability, analytics continuity, and content accuracy. Without it, even a strong build degrades quietly over time.
+
+The priority list is usually straightforward: backups, dependency updates, form checks, performance review, SEO health, and content freshness.
+
+Businesses that treat maintenance as routine discipline avoid avoidable failures later.`,
   },
 ]
 

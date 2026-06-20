@@ -2,7 +2,15 @@ import type { Metadata } from "next"
 
 import { AdminDashboard } from "@/components/admin/admin-dashboard"
 import { requirePermission } from "@/lib/admin"
-import { getCmsCounts, getDashboardMetrics, getLeadRows, getLeadTrend, getRecentAuditLogs } from "@/lib/dashboard-data"
+import {
+  getCmsCounts,
+  getDashboardMetrics,
+  getLeadRows,
+  getLeadSources,
+  getLeadTrend,
+  getRecentAuditLogs,
+  getServicePerformance,
+} from "@/lib/dashboard-data"
 
 export const metadata: Metadata = {
   title: "Admin Dashboard",
@@ -12,13 +20,25 @@ export const metadata: Metadata = {
 export default async function AdminPage() {
   await requirePermission("analytics.read")
 
-  const [metrics, leadRows, cmsCounts, leadTrend, auditLogs] = await Promise.all([
+  const [metrics, leadRows, cmsCounts, leadTrend, auditLogs, leadSources, servicePerformance] = await Promise.all([
     getDashboardMetrics(),
     getLeadRows(),
     getCmsCounts(),
     getLeadTrend(),
     getRecentAuditLogs(),
+    getLeadSources(),
+    getServicePerformance(),
   ])
 
-  return <AdminDashboard metrics={metrics} leadRows={leadRows} cmsCounts={cmsCounts} leadTrend={leadTrend} auditLogs={auditLogs} />
+  return (
+    <AdminDashboard
+      metrics={metrics}
+      leadRows={leadRows}
+      cmsCounts={cmsCounts}
+      leadTrend={leadTrend}
+      auditLogs={auditLogs}
+      leadSources={leadSources}
+      servicePerformance={servicePerformance}
+    />
+  )
 }

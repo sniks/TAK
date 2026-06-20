@@ -14,6 +14,12 @@ type AdminDashboardProps = {
     qualified: number
     won: number
     lost: number
+    failedEmails: number
+    pendingEmails: number
+    retryQueue: number
+    pendingFollowups: number
+    unassignedLeads: number
+    pendingContactRequests: number
     conversionRate: number
   }
   leadRows: Array<{
@@ -26,6 +32,8 @@ type AdminDashboardProps = {
     assignedTo: string
     status: string
     source: string
+    emailStatus: string
+    pendingFollowups: number
   }>
   cmsCounts: {
     blogs: number
@@ -42,9 +50,27 @@ type AdminDashboardProps = {
     entity: string
     createdAt: string
   }>
+  leadSources: Array<{
+    source: string
+    count: number
+  }>
+  servicePerformance: Array<{
+    service: string
+    total: number
+    won: number
+    conversionRate: number
+  }>
 }
 
-export function AdminDashboard({ metrics, leadRows, cmsCounts, leadTrend, auditLogs }: AdminDashboardProps) {
+export function AdminDashboard({
+  metrics,
+  leadRows,
+  cmsCounts,
+  leadTrend,
+  auditLogs,
+  leadSources,
+  servicePerformance,
+}: AdminDashboardProps) {
   const modules = [
     ["Lead Management", `${metrics.total} lead records with status, ownership, and follow-up visibility.`, UsersIcon],
     ["Blog CMS", `${cmsCounts.blogs} published and draft blog records.`, FileTextIcon],
@@ -115,6 +141,27 @@ export function AdminDashboard({ metrics, leadRows, cmsCounts, leadTrend, auditL
               </Card>
             ))}
           </div>
+          <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {[
+              ["Failed Emails", metrics.failedEmails.toString(), FileTextIcon],
+              ["Pending Emails", metrics.pendingEmails.toString(), FileTextIcon],
+              ["Pending Followups", metrics.pendingFollowups.toString(), CalendarClockIcon],
+              ["Unassigned Leads", metrics.unassignedLeads.toString(), UsersIcon],
+            ].map(([label, value, Icon]) => (
+              <Card key={label as string}>
+                <CardHeader>
+                  <CardTitle>{label as string}</CardTitle>
+                  <CardDescription>Launch-readiness watchlist.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <span className="text-3xl font-semibold">{value as string}</span>
+                    <Icon className="text-[var(--brand-pink)]" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
           <div className="mt-6 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
             <Card>
               <CardHeader>
@@ -139,20 +186,25 @@ export function AdminDashboard({ metrics, leadRows, cmsCounts, leadTrend, auditL
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Lead Status Pipeline</CardTitle>
-                <CardDescription>Current lead-stage distribution.</CardDescription>
+                <CardTitle>Operational Queue</CardTitle>
+                <CardDescription>Contacts, followups, and delivery work waiting on the team.</CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Status</TableHead>
+                      <TableHead>Queue</TableHead>
                       <TableHead>Count</TableHead>
                       <TableHead>State</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {statusRows.map((row) => (
+                    {[
+                      ["New Leads", metrics.new.toString(), "Fresh inbound leads"],
+                      ["Pending Contact Requests", metrics.pendingContactRequests.toString(), "Same-day new requests"],
+                      ["Retry Queue", metrics.retryQueue.toString(), "Email retries waiting to run"],
+                      ["Pending Followups", metrics.pendingFollowups.toString(), "Outstanding followup actions"],
+                    ].map((row) => (
                       <TableRow key={row[0]}>
                         <TableCell>{row[0]}</TableCell>
                         <TableCell>{row[1]}</TableCell>
@@ -181,6 +233,8 @@ export function AdminDashboard({ metrics, leadRows, cmsCounts, leadTrend, auditL
                     <TableHead>Assigned To</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Source</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Open Followups</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -188,18 +242,24 @@ export function AdminDashboard({ metrics, leadRows, cmsCounts, leadTrend, auditL
                     leadRows.map((lead) => (
                       <TableRow key={lead.id}>
                         <TableCell>{lead.date}</TableCell>
-                        <TableCell>{lead.name}</TableCell>
+                        <TableCell>
+                          <Link href={`/admin/leads/${lead.id}`} className="font-medium text-[var(--brand-navy)] hover:underline">
+                            {lead.name}
+                          </Link>
+                        </TableCell>
                         <TableCell>{lead.mobile}</TableCell>
                         <TableCell>{lead.service}</TableCell>
                         <TableCell>{lead.city}</TableCell>
                         <TableCell>{lead.assignedTo}</TableCell>
                         <TableCell><Badge variant="secondary">{lead.status}</Badge></TableCell>
                         <TableCell>{lead.source}</TableCell>
+                        <TableCell>{lead.emailStatus}</TableCell>
+                        <TableCell>{lead.pendingFollowups}</TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+                      <TableCell colSpan={10} className="h-24 text-center text-muted-foreground">
                         No leads have been submitted yet.
                       </TableCell>
                     </TableRow>
@@ -239,13 +299,82 @@ export function AdminDashboard({ metrics, leadRows, cmsCounts, leadTrend, auditL
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Operational Notes</CardTitle>
-                <CardDescription>Admin checkpoints that matter before launch.</CardDescription>
+                <CardTitle>Lead Status Pipeline</CardTitle>
+                <CardDescription>Current lead-stage distribution.</CardDescription>
               </CardHeader>
-              <CardContent className="grid gap-3 text-sm text-muted-foreground">
-                <div>Website settings now feed the public homepage, header, footer, contact page, and service pages.</div>
-                <div>Lead routing changes affect callback ownership, WhatsApp links, and email paths without code edits.</div>
-                <div>Blogs, news, gallery, testimonials, users, and media assets are now editable from admin.</div>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Count</TableHead>
+                      <TableHead>State</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {statusRows.map((row) => (
+                      <TableRow key={row[0]}>
+                        <TableCell>{row[0]}</TableCell>
+                        <TableCell>{row[1]}</TableCell>
+                        <TableCell className="text-muted-foreground">{row[2]}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="mt-6 grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+            <Card>
+              <CardHeader>
+                <CardTitle>Lead Sources</CardTitle>
+                <CardDescription>Top inbound source labels currently landing in CRM.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Source</TableHead>
+                      <TableHead>Leads</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {leadSources.map((item) => (
+                      <TableRow key={item.source}>
+                        <TableCell>{item.source}</TableCell>
+                        <TableCell>{item.count}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Service Performance</CardTitle>
+                <CardDescription>Lead volume and win rate by service.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Service</TableHead>
+                      <TableHead>Total</TableHead>
+                      <TableHead>Won</TableHead>
+                      <TableHead>Conv.</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {servicePerformance.map((item) => (
+                      <TableRow key={item.service}>
+                        <TableCell>{item.service}</TableCell>
+                        <TableCell>{item.total}</TableCell>
+                        <TableCell>{item.won}</TableCell>
+                        <TableCell>{item.conversionRate}%</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           </div>

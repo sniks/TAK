@@ -4,9 +4,7 @@ import { useMemo, useRef, useState } from "react"
 import { ArrowRightIcon, CheckCircle2Icon, MessageCircleIcon } from "lucide-react"
 import { toast } from "sonner"
 
-import { serviceCategories } from "@/lib/site"
 import { useSiteData } from "@/components/marketing/site-data-provider"
-import { createLead, type LeadActionState } from "@/server/lead-actions"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field"
@@ -20,6 +18,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { createClientRequestId } from "@/lib/client-id"
+import { getServiceQuestionFields } from "@/lib/site"
 
 type SubmissionType = "callback" | "whatsapp"
 
@@ -35,9 +35,13 @@ type SubmissionResult = {
 export function EnquiryForm({
   defaultService = "corporate-events",
   variant = "full",
+  source = "Website Form",
+  ctaType = "form",
 }: {
   defaultService?: string
   variant?: "full" | "compact"
+  source?: string
+  ctaType?: string
 }) {
   const formRef = useRef<HTMLFormElement | null>(null)
   const requestIdRef = useRef<string>("")
@@ -48,6 +52,16 @@ export function EnquiryForm({
     () => services.find((item) => item.slug === selectedService) ?? services[0],
     [selectedService, services]
   )
+  const questionFields = useMemo(
+    () =>
+      getServiceQuestionFields(selectedService) ??
+      service.questions.map((question) => ({
+        label: question,
+        type: question.includes("Details") ? ("textarea" as const) : ("text" as const),
+      })),
+    [selectedService, service.questions]
+  )
+  const showServiceQuestions = variant === "full" || selectedService === "website-software-development"
 
   return (
     <form
@@ -79,13 +93,15 @@ export function EnquiryForm({
 
         try {
           if (!requestIdRef.current) {
-            requestIdRef.current = crypto.randomUUID()
+            requestIdRef.current = createClientRequestId()
           }
 
           const formData = new FormData(form)
           formData.set("requestId", requestIdRef.current)
           formData.set("submissionType", submissionType)
           formData.set("service", selectedService)
+          formData.set("source", source)
+          formData.set("ctaType", ctaType)
 
           const payload: Record<string, unknown> = Object.fromEntries(formData.entries())
           payload.servicePayload = Object.fromEntries(
@@ -194,15 +210,33 @@ export function EnquiryForm({
           </Select>
           <FieldDescription>{service.summary}</FieldDescription>
         </Field>
-        {variant === "full" ? (
-          <div className="grid gap-4 md:grid-cols-2">
-            {service.questions.map((question) => (
-              <Field key={question} className={question.includes("Details") ? "md:col-span-2" : undefined}>
-                <FieldLabel htmlFor={question}>{question}</FieldLabel>
-                {question.includes("Details") ? (
-                  <Textarea id={question} name={`question:${question}`} rows={4} />
+        {showServiceQuestions ? (
+          <div className={`grid gap-4 ${variant === "full" ? "md:grid-cols-2" : ""}`}>
+            {questionFields.map((question) => (
+              <Field
+                key={question.label}
+                className={question.label.includes("Details") && variant === "full" ? "md:col-span-2" : undefined}
+              >
+                <FieldLabel htmlFor={question.label}>{question.label}</FieldLabel>
+                {question.type === "textarea" ? (
+                  <Textarea id={question.label} name={`question:${question.label}`} rows={4} />
+                ) : question.type === "select" ? (
+                  <Select name={`question:${question.label}`}>
+                    <SelectTrigger className="w-full bg-background">
+                      <SelectValue placeholder={`Select ${question.label.toLowerCase()}`} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {question.options?.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                 ) : (
-                  <Input id={question} name={`question:${question}`} />
+                  <Input id={question.label} name={`question:${question.label}`} />
                 )}
               </Field>
             ))}

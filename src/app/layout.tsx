@@ -58,7 +58,19 @@ export default async function RootLayout({
   const [routingRules, settings, services] = await Promise.all([
     prisma.leadRoutingRule.findMany({
       where: { isActive: true },
-      include: { service: true },
+      select: {
+        city: true,
+        assignedMobile: true,
+        assignedWhatsapp: true,
+        assignedEmail: true,
+        ownerName: true,
+        priority: true,
+        service: {
+          select: {
+            slug: true,
+          },
+        },
+      },
       orderBy: { priority: "asc" },
     }),
     getSiteSettings(),

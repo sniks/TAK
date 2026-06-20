@@ -27,30 +27,38 @@ export function SiteFooter() {
             </p>
           </div>
           <div className="grid gap-3 text-sm text-white/80 min-w-0">
-            <a className="inline-flex min-w-0 items-center gap-2 transition hover:text-white" href={`tel:${settings.primaryPhone}`}>
+            <div className="inline-flex min-w-0 items-center gap-2 text-left transition hover:text-white">
               <PhoneCallIcon className="size-4" />
-              {settings.primaryPhone}
-            </a>
-            <a className="inline-flex min-w-0 items-center gap-2 transition hover:text-white" href={`mailto:${settings.primaryEmail}`}>
+              <CallbackButton variant="link" size="default" mode="call" source="Footer Call CTA" ctaType="call" className="h-auto p-0 text-sm text-inherit">
+                {settings.primaryPhone}
+              </CallbackButton>
+            </div>
+            <div className="inline-flex min-w-0 items-center gap-2 text-left transition hover:text-white">
               <MailIcon className="size-4" />
-              {settings.primaryEmail}
-            </a>
+              <CallbackButton variant="link" size="default" mode="email" source="Footer Email CTA" ctaType="email" className="h-auto p-0 text-sm text-inherit">
+                {settings.primaryEmail}
+              </CallbackButton>
+            </div>
             <div className="inline-flex items-start gap-2 text-white/72">
               <MapPinIcon className="size-4" />
               <span className="leading-6">{settings.citiesLabel}</span>
             </div>
           </div>
           <div className="flex flex-wrap gap-3">
-            <CallbackButton className="bg-[var(--brand-pink)] text-white hover:bg-[color-mix(in_oklab,var(--brand-pink),black_8%)]">
+            <CallbackButton className="bg-[var(--brand-pink)] text-white hover:bg-[color-mix(in_oklab,var(--brand-pink),black_8%)]" source="Footer Callback CTA" ctaType="callback">
               Request Callback
             </CallbackButton>
-            <a
-              className="inline-flex h-10 items-center justify-center rounded-full border border-white/18 px-5 text-sm font-medium text-white transition hover:bg-white/8"
-              href={`https://wa.me/${settings.primaryWhatsapp}?text=Hello%20Team%2C%20I%20would%20like%20to%20know%20more%20about%20Taakshvi%20services.`}
+            <CallbackButton
+              className="border-white/18 text-white hover:bg-white/8"
+              variant="outline"
+              size="default"
+              mode="whatsapp"
+              source="Footer WhatsApp CTA"
+              ctaType="whatsapp"
             >
               <MessageCircleIcon className="mr-2 size-4" />
               WhatsApp
-            </a>
+            </CallbackButton>
           </div>
           <div className="flex flex-wrap items-center gap-3 text-white/72">
             {settings.socialLinks.map((link) => {
@@ -74,8 +82,8 @@ export function SiteFooter() {
 
         <div className="min-w-0">
           <div className="text-sm font-semibold uppercase tracking-[0.2em] text-white/54">Services</div>
-          <div className="mt-4 grid gap-2 text-sm text-white/72">
-            {services.slice(0, 8).map((service) => (
+          <div className="mt-4 grid gap-2 text-sm text-white/72 sm:grid-cols-2">
+            {services.map((service) => (
               <Link key={service.slug} href={`/services/${service.slug}`} className="transition hover:text-white">
                 {service.name}
               </Link>
@@ -123,12 +131,16 @@ export function SiteFooter() {
                 placeholder="Enter your email"
                 className="h-11 w-full min-w-0 rounded-full border border-white/14 bg-white/8 px-4 text-sm text-white placeholder:text-white/40 sm:flex-1"
               />
-              <a
-                href={`mailto:${settings.primaryEmail}?subject=Newsletter%20Signup&body=Please%20add%20me%20to%20the%20Taakshvi%20newsletter.`}
-                className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-white px-5 text-sm font-medium text-[var(--brand-navy)] transition hover:bg-white/90"
+              <CallbackButton
+                variant="secondary"
+                size="default"
+                mode="email"
+                source="Footer Newsletter CTA"
+                ctaType="email"
+                className="h-11 shrink-0 rounded-full bg-white px-5 text-sm font-medium text-[var(--brand-navy)] transition hover:bg-white/90"
               >
                 Subscribe
-              </a>
+              </CallbackButton>
             </form>
           </div>
         </div>

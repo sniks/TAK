@@ -1,26 +1,18 @@
 "use client"
 
+import { useEffect, useMemo, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion"
 import {
   ArrowRightIcon,
   BadgeCheckIcon,
-  BriefcaseBusinessIcon,
-  Building2Icon,
-  CameraIcon,
-  HeartPulseIcon,
-  HomeIcon,
   MapPinnedIcon,
-  MegaphoneIcon,
-  LaptopMinimalIcon,
-  PlaneIcon,
   ShieldCheckIcon,
   SparklesIcon,
-  StarIcon,
   TargetIcon,
-  TheaterIcon,
   UsersRoundIcon,
+  XIcon,
 } from "lucide-react"
 
 import { CallbackButton } from "@/components/marketing/callback-button"
@@ -33,6 +25,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { renderServiceIcon } from "@/lib/service-icons"
 
 type RecentEnquiry = {
   id: string
@@ -58,23 +51,6 @@ type MediaItem = {
   href: string | null
   description: string
 }
-
-const serviceIcons = [
-  BriefcaseBusinessIcon,
-  PlaneIcon,
-  SparklesIcon,
-  MegaphoneIcon,
-  CameraIcon,
-  TheaterIcon,
-  Building2Icon,
-  UsersRoundIcon,
-  HomeIcon,
-  TargetIcon,
-  StarIcon,
-  HeartPulseIcon,
-  ShieldCheckIcon,
-  LaptopMinimalIcon,
-]
 
 const whyChooseCards = [
   {
@@ -106,27 +82,6 @@ const whyChooseCards = [
     icon: BadgeCheckIcon,
     title: "Verified Service Partners",
     copy: "A dependable network helps each category feel more premium, responsive, and professionally managed.",
-  },
-]
-
-const mediaCoverage = [
-  {
-    title: "Gujarati Wellness Retreat Coverage",
-    source: "Divya Bhaskar",
-    href: "https://divya.bhaskar.com/wbUX9WFpX3b",
-    description: "Regional media attention around the retreat format, atmosphere, and guest experience.",
-  },
-  {
-    title: "BS9 TV Coverage",
-    source: "BS9 TV",
-    href: "https://www.facebook.com/share/v/1DDm5YnxcU/",
-    description: "Public-facing video coverage showing audience energy, event presence, and on-ground brand visibility.",
-  },
-  {
-    title: "YouTube Video Coverage",
-    source: "Video Reference",
-    href: "https://youtu.be/ujEAn4u1A28",
-    description: "A richer visual proof point for visitors who want to understand event quality and atmosphere.",
   },
 ]
 
@@ -195,18 +150,22 @@ export function HomePage({
                 <CallbackButton
                   className="h-12 bg-[var(--brand-pink)] px-7 text-white hover:bg-[color-mix(in_oklab,var(--brand-pink),black_8%)]"
                   size="lg"
+                  source="Homepage Hero Callback CTA"
+                  ctaType="callback"
                 >
                   {settings.homepage.primaryCtaLabel}
                   <ArrowRightIcon data-icon="inline-end" />
                 </CallbackButton>
-                <Button
+                <CallbackButton
                   className="h-12 border-[var(--brand-green)] text-[var(--brand-green)] hover:bg-[color-mix(in_oklab,var(--brand-green),white_88%)]"
                   size="lg"
-                  render={<a href={`https://wa.me/${settings.primaryWhatsapp}?text=Hello%20Team%2C%20I%20am%20interested%20in%20Taakshvi%20services.`} />}
+                  mode="whatsapp"
+                  source="Homepage Hero WhatsApp CTA"
+                  ctaType="whatsapp"
                   variant="outline"
                 >
                   {settings.homepage.secondaryCtaLabel}
-                </Button>
+                </CallbackButton>
                 <Button variant="outline" size="lg" className="h-12 px-7" render={<Link href="/services" />}>
                   Explore Services
                 </Button>
@@ -242,7 +201,7 @@ export function HomePage({
                     <p className="text-xs text-muted-foreground">Quick response. Secure and private.</p>
                   </div>
                 </div>
-                <EnquiryForm variant="compact" />
+                <EnquiryForm variant="compact" source="Homepage Hero Form" ctaType="form" />
                 <div className="mt-4 grid grid-cols-3 gap-2 text-[11px] text-muted-foreground">
                   {["Quick Response", "Secure & Private", "Trusted by 1000+"].map((item) => (
                     <div key={item} className="flex items-center gap-1 rounded-full bg-muted px-2 py-1">
@@ -258,24 +217,21 @@ export function HomePage({
 
           <div className="relative mx-auto mt-10 w-full max-w-[1320px] px-4 sm:px-6">
             <div className="grid auto-rows-fr grid-cols-2 gap-px overflow-hidden rounded-[1.75rem] border border-border bg-border shadow-xl shadow-blue-950/8 backdrop-blur sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7">
-              {serviceCategories.map((service, index) => {
-                const Icon = serviceIcons[index] ?? StarIcon
-                const href = "href" in service ? service.href : `/services/${service.slug}`
+              {services.map((service, index) => {
                 return (
                   <Link
                     key={service.slug}
-                    href={href}
+                    href={`/services/${service.slug}`}
                     className="group box-border flex h-full min-h-[136px] w-full flex-col items-center justify-center gap-3 overflow-hidden bg-white px-4 py-5 text-center text-xs font-medium hover:bg-[linear-gradient(135deg,rgba(239,63,134,0.08),rgba(79,181,84,0.08))]"
                   >
-                    <Icon
-                      className={
+                    {renderServiceIcon(service.slug, {
+                      className:
                         index % 3 === 0
                           ? "size-6 shrink-0 text-[var(--brand-pink)] transition group-hover:scale-110"
                           : index % 3 === 1
                             ? "size-6 shrink-0 text-[var(--brand-blue)] transition group-hover:scale-110"
-                            : "size-6 shrink-0 text-[var(--brand-green)] transition group-hover:scale-110"
-                      }
-                    />
+                            : "size-6 shrink-0 text-[var(--brand-green)] transition group-hover:scale-110",
+                    })}
                     <span className="min-w-0 max-w-[128px] whitespace-normal break-words leading-tight text-[var(--brand-navy)]">
                       {service.name}
                     </span>
@@ -303,14 +259,13 @@ export function HomePage({
             </div>
           </div>
           <div className="grid items-stretch gap-4 sm:grid-cols-2">
-            {services.slice(0, 8).map((service, index) => {
-              const Icon = serviceIcons[index] ?? StarIcon
+            {services.map((service) => {
               return (
                 <Link key={service.slug} href={`/services/${service.slug}`}>
                   <Card className="group h-full overflow-hidden transition hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-950/10">
                     <CardHeader>
                       <div className="mb-3 flex size-11 shrink-0 items-center justify-center rounded-lg bg-muted text-[var(--brand-blue)] transition group-hover:bg-[var(--brand-navy)] group-hover:text-white">
-                        <Icon />
+                        {renderServiceIcon(service.slug)}
                       </div>
                       <CardTitle>{service.name}</CardTitle>
                       <CardDescription>{service.summary}</CardDescription>
@@ -371,7 +326,7 @@ export function HomePage({
               <CardDescription>Tell us a little about your requirement and preferred service.</CardDescription>
             </CardHeader>
             <CardContent>
-              <EnquiryForm />
+              <EnquiryForm source="Homepage Main Form" ctaType="form" />
             </CardContent>
           </Card>
         </section>
@@ -425,41 +380,126 @@ export function HomePage({
 
 function RecentEnquiriesWidget({ enquiries }: { enquiries: RecentEnquiry[] }) {
   const { settings } = useSiteData()
+  const [dismissed, setDismissed] = useState(() => {
+    if (typeof window === "undefined") return false
+    return window.sessionStorage.getItem("recent-enquiries-dismissed") === "true"
+  })
+  const [visible, setVisible] = useState(() => {
+    if (typeof window === "undefined") return true
+    return window.sessionStorage.getItem("recent-enquiries-dismissed") !== "true"
+  })
+  const [activeIndex, setActiveIndex] = useState(0)
+  const currentEnquiry = useMemo(
+    () => (enquiries.length ? enquiries[activeIndex % enquiries.length] : null),
+    [activeIndex, enquiries]
+  )
+
+  useEffect(() => {
+    if (!enquiries.length || dismissed) return
+
+    const rotationTimer = window.setInterval(() => {
+      setActiveIndex((current) => (current + 1) % enquiries.length)
+    }, settings.recentEnquiries.rotationSeconds * 1000)
+
+    return () => window.clearInterval(rotationTimer)
+  }, [dismissed, enquiries.length, settings.recentEnquiries.rotationSeconds])
+
+  useEffect(() => {
+    if (dismissed || !visible) return
+
+    const hideTimer = window.setTimeout(() => {
+      setVisible(false)
+    }, settings.recentEnquiries.autoHideSeconds * 1000)
+
+    return () => window.clearTimeout(hideTimer)
+  }, [dismissed, visible, settings.recentEnquiries.autoHideSeconds, activeIndex])
+
+  useEffect(() => {
+    if (dismissed) return
+
+    let inactivityTimer = 0
+    const markInteraction = () => {
+      setVisible(false)
+      window.clearTimeout(inactivityTimer)
+      inactivityTimer = window.setTimeout(() => {
+        setVisible(true)
+      }, settings.recentEnquiries.inactivityReappearSeconds * 1000)
+    }
+
+    const events: Array<keyof WindowEventMap> = ["click", "scroll", "keydown", "mousemove", "touchstart"]
+    for (const eventName of events) {
+      window.addEventListener(eventName, markInteraction, { passive: true })
+    }
+
+    inactivityTimer = window.setTimeout(() => {
+      setVisible(true)
+    }, settings.recentEnquiries.inactivityReappearSeconds * 1000)
+
+    return () => {
+      for (const eventName of events) {
+        window.removeEventListener(eventName, markInteraction)
+      }
+      window.clearTimeout(inactivityTimer)
+    }
+  }, [dismissed, settings.recentEnquiries.inactivityReappearSeconds])
 
   if (!settings.recentEnquiries.enabled) {
     return null
   }
 
+  if (!visible || dismissed) {
+    return null
+  }
+
+  const styleClass =
+    settings.recentEnquiries.displayStyle === "toast"
+      ? "fixed bottom-20 right-4 z-40 w-[20rem] rounded-2xl border border-border bg-white/95 p-4 shadow-xl backdrop-blur-xl"
+      : settings.recentEnquiries.displayStyle === "popup"
+        ? "fixed bottom-8 right-6 z-40 w-[22rem] rounded-3xl border border-border bg-white p-5 shadow-2xl shadow-blue-950/15"
+        : "fixed bottom-4 left-4 right-4 z-40 rounded-2xl border border-border bg-white/95 p-4 shadow-2xl shadow-blue-950/12 backdrop-blur-xl sm:left-auto sm:right-4 sm:w-[21rem] lg:bottom-8 lg:right-8 lg:w-80"
+
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-40 rounded-2xl border border-border bg-white/95 p-4 shadow-2xl shadow-blue-950/12 backdrop-blur-xl sm:left-auto sm:right-4 sm:w-[21rem] lg:bottom-8 lg:right-8 lg:w-80">
+    <div className={styleClass}>
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm font-semibold text-[var(--brand-navy)]">
           <span className="size-2 rounded-full bg-[var(--brand-green)]" />
           Recent Enquiries
         </div>
-        {settings.recentEnquiries.liveBadge ? (
-          <Badge variant="secondary" className="text-[var(--brand-pink)]">
-            Live
-          </Badge>
-        ) : null}
+        <div className="flex items-center gap-2">
+          {settings.recentEnquiries.liveBadge ? (
+            <Badge variant="secondary" className="text-[var(--brand-pink)]">
+              Live
+            </Badge>
+          ) : null}
+          <button
+            type="button"
+            aria-label="Close recent enquiries"
+            className="rounded-full p-1 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+            onClick={() => {
+              window.sessionStorage.setItem("recent-enquiries-dismissed", "true")
+              setDismissed(true)
+              setVisible(false)
+            }}
+          >
+            <XIcon className="size-4" />
+          </button>
+        </div>
       </div>
       <div className="grid gap-3">
-        {enquiries.length ? (
-          enquiries.map((enquiry) => (
-            <div key={enquiry.id} className="grid grid-cols-[36px_1fr_auto] items-center gap-3">
+        {currentEnquiry ? (
+            <div key={currentEnquiry.id} className="grid grid-cols-[36px_1fr_auto] items-center gap-3">
               <div className="flex size-9 items-center justify-center rounded-full bg-blue-50 text-[var(--brand-blue)]">
                 <UsersRoundIcon />
               </div>
               <div className="min-w-0 text-xs">
                 <div className="truncate font-semibold text-[var(--brand-navy)]">
-                  {enquiry.name} from {enquiry.city}
+                  {currentEnquiry.name} from {currentEnquiry.city}
                 </div>
-                <div className="truncate text-muted-foreground">requested {enquiry.service}</div>
-                <div className="mt-0.5 text-[11px] text-muted-foreground">{enquiry.time}</div>
+                <div className="truncate text-muted-foreground">requested {currentEnquiry.service}</div>
+                <div className="mt-0.5 text-[11px] text-muted-foreground">{currentEnquiry.time}</div>
               </div>
               <span className="size-2 rounded-full bg-[var(--brand-green)]" />
             </div>
-          ))
         ) : (
           <div className="rounded-lg bg-muted p-3 text-xs text-muted-foreground">
             Fresh enquiry activity will appear here as new requests come in.

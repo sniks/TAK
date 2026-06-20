@@ -7,7 +7,6 @@ import { PhoneCallIcon } from "lucide-react"
 
 import { CallbackButton } from "@/components/marketing/callback-button"
 import { useSiteData } from "@/components/marketing/site-data-provider"
-import { Button } from "@/components/ui/button"
 
 export function Header() {
   const pathname = usePathname()
@@ -53,20 +52,28 @@ export function Header() {
         </nav>
 
         <div className="hidden items-center gap-3 sm:flex">
-          <Button variant="outline" size="lg" render={<a href={`tel:${settings.primaryPhone}`} />}>
+          <CallbackButton
+            variant="outline"
+            size="lg"
+            mode="call"
+            source="Header Call CTA"
+            ctaType="call"
+          >
             <PhoneCallIcon data-icon="inline-start" />
             {settings.primaryPhone}
-          </Button>
+          </CallbackButton>
           <CallbackButton
             className="bg-[var(--brand-pink)] text-white hover:bg-[color-mix(in_oklab,var(--brand-pink),black_8%)]"
             size="lg"
+            source="Header Callback CTA"
+            ctaType="callback"
           >
             <PhoneCallIcon data-icon="inline-start" />
             Request Callback
           </CallbackButton>
         </div>
 
-        <CallbackButton className="bg-[var(--brand-pink)] text-white sm:hidden" size="sm">
+        <CallbackButton className="bg-[var(--brand-pink)] text-white sm:hidden" size="sm" source="Mobile Header Callback CTA" ctaType="callback">
           <PhoneCallIcon data-icon="inline-start" />
           Callback
         </CallbackButton>

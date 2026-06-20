@@ -32,10 +32,35 @@ export default async function SettingsPage() {
       prisma.setting.findUnique({ where: { key: "whatsapp_settings" } }),
       prisma.setting.findUnique({ where: { key: "footer_settings" } }),
       prisma.leadRoutingRule.findMany({
-        include: { service: true },
+        select: {
+          id: true,
+          serviceId: true,
+          city: true,
+          ownerName: true,
+          assignedMobile: true,
+          assignedWhatsapp: true,
+          assignedEmail: true,
+          priority: true,
+          service: {
+            select: {
+              name: true,
+            },
+          },
+        },
         orderBy: [{ priority: "asc" }, { ownerName: "asc" }],
       }),
-      prisma.service.findMany({ orderBy: { name: "asc" } }),
+      prisma.service.findMany({
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          serviceEmail: true,
+          serviceWhatsappNumber: true,
+          isActive: true,
+        },
+        orderBy: { name: "asc" },
+      }),
     ])
 
   const companyValue = (company?.value ?? {}) as {
@@ -49,7 +74,15 @@ export default async function SettingsPage() {
     citiesLabel?: string
   }
   const contactValue = (contact?.value ?? {}) as { phone?: string; email?: string; address?: string }
-  const recentValue = (recent?.value ?? {}) as { enabled?: boolean; limit?: number; liveBadge?: boolean }
+  const recentValue = (recent?.value ?? {}) as {
+    enabled?: boolean
+    limit?: number
+    liveBadge?: boolean
+    autoHideSeconds?: number
+    inactivityReappearSeconds?: number
+    rotationSeconds?: number
+    displayStyle?: "toast" | "popup" | "floating-card"
+  }
   const seoValue = (seo?.value ?? {}) as { title?: string; description?: string; ogImage?: string }
   const socialValue = (social?.value ?? {}) as {
     instagram?: string
@@ -71,7 +104,13 @@ export default async function SettingsPage() {
     ctaTitle?: string
     ctaCopy?: string
   }
-  const emailValue = (emailSettings?.value ?? {}) as { from?: string; replyTo?: string }
+  const emailValue = (emailSettings?.value ?? {}) as {
+    from?: string
+    replyTo?: string
+    bcc?: string[]
+    cc?: string[]
+    enableBcc?: boolean
+  }
   const whatsappValue = (whatsappSettings?.value ?? {}) as { primary?: string }
   const footerValue = (footerSettings?.value ?? {}) as {
     trustHeading?: string
@@ -105,6 +144,7 @@ export default async function SettingsPage() {
                   <TabsTrigger value="homepage">Homepage</TabsTrigger>
                   <TabsTrigger value="services">Services</TabsTrigger>
                   <TabsTrigger value="routing">Lead Routing</TabsTrigger>
+                  <TabsTrigger value="recent">Recent Enquiries</TabsTrigger>
                   <TabsTrigger value="email">Email Settings</TabsTrigger>
                   <TabsTrigger value="whatsapp">WhatsApp Settings</TabsTrigger>
                   <TabsTrigger value="footer">Footer Settings</TabsTrigger>
@@ -161,18 +201,6 @@ export default async function SettingsPage() {
                     <Field>
                       <FieldLabel htmlFor="citiesLabel">Cities Label</FieldLabel>
                       <Input id="citiesLabel" name="citiesLabel" defaultValue={companyValue.citiesLabel ?? "Mumbai • Ahmedabad • Nasik • Lucknow"} />
-                    </Field>
-                    <Field orientation="horizontal">
-                      <Checkbox id="recentEnabled" name="recentEnabled" defaultChecked={recentValue.enabled ?? true} />
-                      <FieldLabel htmlFor="recentEnabled">Enable recent enquiry widget</FieldLabel>
-                    </Field>
-                    <Field orientation="horizontal">
-                      <Checkbox id="recentLiveBadge" name="recentLiveBadge" defaultChecked={recentValue.liveBadge ?? true} />
-                      <FieldLabel htmlFor="recentLiveBadge">Show live badge on enquiry widget</FieldLabel>
-                    </Field>
-                    <Field>
-                      <FieldLabel htmlFor="recentLimit">Recent enquiry records shown</FieldLabel>
-                      <Input id="recentLimit" name="recentLimit" type="number" min="1" max="10" defaultValue={recentValue.limit ?? 4} />
                     </Field>
                   </FieldGroup>
                 </TabsContent>
@@ -290,6 +318,16 @@ export default async function SettingsPage() {
                               <Input name="serviceSlug" defaultValue={service.slug} />
                             </Field>
                           </div>
+                          <div className="grid gap-4 md:grid-cols-2">
+                            <Field>
+                              <FieldLabel>Routing Email</FieldLabel>
+                              <Input name="serviceEmail" type="email" defaultValue={service.serviceEmail ?? ""} />
+                            </Field>
+                            <Field>
+                              <FieldLabel>Routing WhatsApp</FieldLabel>
+                              <Input name="serviceWhatsappNumber" defaultValue={service.serviceWhatsappNumber ?? ""} />
+                            </Field>
+                          </div>
                           <Field>
                             <FieldLabel>Description</FieldLabel>
                             <Textarea name="serviceDescription" rows={3} defaultValue={service.description} />
@@ -368,6 +406,72 @@ export default async function SettingsPage() {
                       <FieldLabel htmlFor="emailReplyTo">Reply-To Email</FieldLabel>
                       <Input id="emailReplyTo" name="emailReplyTo" defaultValue={emailValue.replyTo ?? ""} />
                     </Field>
+                    <Field orientation="horizontal">
+                      <Checkbox id="emailEnableBcc" name="emailEnableBcc" defaultChecked={emailValue.enableBcc ?? true} />
+                      <FieldLabel htmlFor="emailEnableBcc">Enable BCC on outgoing lead emails</FieldLabel>
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="emailBcc">BCC Recipients</FieldLabel>
+                      <Textarea
+                        id="emailBcc"
+                        name="emailBcc"
+                        rows={4}
+                        defaultValue={(emailValue.bcc ?? []).join("\n")}
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="emailCc">CC Recipients</FieldLabel>
+                      <Textarea
+                        id="emailCc"
+                        name="emailCc"
+                        rows={4}
+                        defaultValue={(emailValue.cc ?? []).join("\n")}
+                      />
+                    </Field>
+                  </FieldGroup>
+                </TabsContent>
+
+                <TabsContent value="recent">
+                  <FieldGroup>
+                    <Field orientation="horizontal">
+                      <Checkbox id="recentEnabled" name="recentEnabled" defaultChecked={recentValue.enabled ?? true} />
+                      <FieldLabel htmlFor="recentEnabled">Enable recent enquiry widget</FieldLabel>
+                    </Field>
+                    <Field orientation="horizontal">
+                      <Checkbox id="recentLiveBadge" name="recentLiveBadge" defaultChecked={recentValue.liveBadge ?? true} />
+                      <FieldLabel htmlFor="recentLiveBadge">Show live badge on enquiry widget</FieldLabel>
+                    </Field>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <Field>
+                        <FieldLabel htmlFor="recentLimit">Maximum records</FieldLabel>
+                        <Input id="recentLimit" name="recentLimit" type="number" min="1" max="10" defaultValue={recentValue.limit ?? 4} />
+                      </Field>
+                      <Field>
+                        <FieldLabel htmlFor="recentDisplayStyle">Display Style</FieldLabel>
+                        <select
+                          id="recentDisplayStyle"
+                          name="recentDisplayStyle"
+                          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                          defaultValue={recentValue.displayStyle ?? "floating-card"}
+                        >
+                          <option value="toast">Toast</option>
+                          <option value="popup">Popup</option>
+                          <option value="floating-card">Floating Card</option>
+                        </select>
+                      </Field>
+                      <Field>
+                        <FieldLabel htmlFor="recentAutoHideSeconds">Auto Hide Seconds</FieldLabel>
+                        <Input id="recentAutoHideSeconds" name="recentAutoHideSeconds" type="number" min="6" max="20" defaultValue={recentValue.autoHideSeconds ?? 10} />
+                      </Field>
+                      <Field>
+                        <FieldLabel htmlFor="recentInactivityReappearSeconds">Inactivity Reappear Seconds</FieldLabel>
+                        <Input id="recentInactivityReappearSeconds" name="recentInactivityReappearSeconds" type="number" min="20" max="120" defaultValue={recentValue.inactivityReappearSeconds ?? 45} />
+                      </Field>
+                      <Field>
+                        <FieldLabel htmlFor="recentRotationSeconds">Rotation Seconds</FieldLabel>
+                        <Input id="recentRotationSeconds" name="recentRotationSeconds" type="number" min="10" max="30" defaultValue={recentValue.rotationSeconds ?? 18} />
+                      </Field>
+                    </div>
                   </FieldGroup>
                 </TabsContent>
 
@@ -489,6 +593,16 @@ export default async function SettingsPage() {
                 <Field>
                   <FieldLabel htmlFor="service-slug">Slug</FieldLabel>
                   <Input id="service-slug" name="slug" required />
+                </Field>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Field>
+                  <FieldLabel htmlFor="service-email">Routing Email</FieldLabel>
+                  <Input id="service-email" name="serviceEmail" type="email" />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="service-whatsapp">Routing WhatsApp</FieldLabel>
+                  <Input id="service-whatsapp" name="serviceWhatsappNumber" />
                 </Field>
               </div>
               <Field>

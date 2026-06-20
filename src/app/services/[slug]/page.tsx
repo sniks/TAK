@@ -1,7 +1,14 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowRightIcon, BadgeCheckIcon, CheckCircle2Icon, MessageCircleIcon } from "lucide-react"
+import {
+  ArrowRightIcon,
+  BadgeCheckIcon,
+  CheckCircle2Icon,
+  Code2Icon,
+  MessageCircleIcon,
+  QuoteIcon,
+} from "lucide-react"
 
 import { Breadcrumbs } from "@/components/marketing/breadcrumbs"
 import { CallbackButton } from "@/components/marketing/callback-button"
@@ -10,6 +17,8 @@ import { Header } from "@/components/marketing/header"
 import { SiteFooter } from "@/components/marketing/site-footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { serviceDetailContent } from "@/lib/service-content"
+import { renderServiceIcon } from "@/lib/service-icons"
 import { getPublicServices, getSiteSettings } from "@/lib/site-settings"
 
 type Props = {
@@ -18,24 +27,6 @@ type Props = {
 
 export function generateStaticParams() {
   return []
-}
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params
-  const services = await getPublicServices()
-  const service = services.find((item) => item.slug === slug)
-  if (!service) return {}
-
-  return {
-    title: service.name,
-    description: service.summary,
-    alternates: { canonical: `/services/${service.slug}` },
-    openGraph: {
-      title: `${service.name} | TAAKSHVI Solution Hub`,
-      description: service.summary,
-      url: `/services/${service.slug}`,
-    },
-  }
 }
 
 function getBenefits(serviceName: string) {
@@ -67,17 +58,55 @@ function getFaqs(serviceName: string) {
   ]
 }
 
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params
+  const services = await getPublicServices()
+  const service = services.find((item) => item.slug === slug)
+  if (!service) return {}
+
+  const detail = serviceDetailContent[service.slug]
+
+  return {
+    title: detail?.metaTitle ? { absolute: detail.metaTitle } : service.name,
+    description: detail?.metaDescription ?? service.summary,
+    alternates: { canonical: `/services/${service.slug}` },
+    openGraph: {
+      title: detail?.metaTitle ?? `${service.name} | TAAKSHVI Solution Hub`,
+      description: detail?.metaDescription ?? service.summary,
+      url: `/services/${service.slug}`,
+    },
+  }
+}
+
 export default async function ServicePage({ params }: Props) {
   const { slug } = await params
   const [services, settings] = await Promise.all([getPublicServices(), getSiteSettings()])
   const service = services.find((item) => item.slug === slug)
   if (!service) notFound()
 
+  const detail = serviceDetailContent[service.slug]
   const relatedServices = services.filter((item) => item.slug !== service.slug).slice(0, 3)
+  const serviceFaqs = detail?.faqs ?? getFaqs(service.name)
+  const serviceSchema = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: service.name,
+    description: detail?.metaDescription ?? service.summary,
+    provider: {
+      "@type": "Organization",
+      name: settings.companyName,
+      url: settings.siteUrl,
+      email: settings.primaryEmail,
+      telephone: settings.primaryPhone,
+    },
+    areaServed: ["Mumbai", "Ahmedabad", "Nasik", "Lucknow"],
+    serviceType: service.name,
+    url: `${settings.siteUrl}/services/${service.slug}`,
+  }
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: getFaqs(service.name).map((item) => ({
+    mainEntity: serviceFaqs.map((item) => ({
       "@type": "Question",
       name: item.question,
       acceptedAnswer: {
@@ -86,7 +115,6 @@ export default async function ServicePage({ params }: Props) {
       },
     })),
   }
-
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -101,28 +129,38 @@ export default async function ServicePage({ params }: Props) {
                   { label: service.name },
                 ]}
               />
-              <h1 className="max-w-4xl text-4xl font-semibold leading-tight text-[var(--brand-navy)] sm:text-5xl">
+              <div className="mt-6 inline-flex items-center gap-3 rounded-full bg-white px-4 py-2 text-sm font-medium text-[var(--brand-pink)] shadow-lg shadow-blue-950/6">
+                {renderServiceIcon(service.slug, { className: "size-4" })}
+                {detail?.eyebrow ?? "Premium Service"}
+              </div>
+              <h1 className="mt-6 max-w-4xl text-4xl font-semibold leading-tight text-[var(--brand-navy)] sm:text-5xl">
                 {service.name}
               </h1>
-              <p className="mt-6 max-w-3xl text-lg leading-8 text-muted-foreground">{service.summary}</p>
+              <p className="mt-6 max-w-3xl text-lg leading-8 text-muted-foreground">
+                {detail?.heroDescription ?? service.summary}
+              </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <CallbackButton service={service.slug} className="bg-[var(--brand-pink)] text-white">
                   Request Callback
                 </CallbackButton>
-                <Button
+                <CallbackButton
+                  service={service.slug}
                   variant="outline"
-                  render={
-                    <a
-                      href={`https://wa.me/${settings.primaryWhatsapp}?text=Hello%20Team%2C%20I%20am%20interested%20in%20${encodeURIComponent(service.name)}.`}
-                    />
-                  }
+                  mode="whatsapp"
+                  source={`Service Page CTA - ${service.name}`}
+                  ctaType="whatsapp"
                 >
                   <MessageCircleIcon data-icon="inline-start" />
                   WhatsApp Now
-                </Button>
+                </CallbackButton>
               </div>
               <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                {["Premium experience design", "Tracked lead workflow", "Service-specific form fields", "Multi-path conversion"].map((item) => (
+                {(detail?.heroHighlights ?? [
+                  "Premium experience design",
+                  "Tracked lead workflow",
+                  "Service-specific form fields",
+                  "Multi-path conversion",
+                ]).map((item) => (
                   <div key={item} className="flex items-center gap-3 rounded-full bg-white px-4 py-3 text-sm font-medium text-[var(--brand-navy)] shadow-lg shadow-blue-950/6">
                     <BadgeCheckIcon className="text-[var(--brand-green)]" />
                     {item}
@@ -139,109 +177,250 @@ export default async function ServicePage({ params }: Props) {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <EnquiryForm defaultService={service.slug} />
+                <EnquiryForm defaultService={service.slug} source={`Service Form - ${service.name}`} ctaType="form" />
               </CardContent>
             </Card>
           </div>
         </section>
 
-        <section className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-16 sm:px-6 lg:grid-cols-3 lg:px-8">
-          {[
-            ["Why this service matters", `${service.name} should feel coordinated, premium, and accountable from first outreach to final execution.`],
-            ["What we capture", service.questions.join(", ")],
-            ["What the client gets", "Clear communication, faster follow-up, and a smoother path from first enquiry to next step."],
-          ].map(([title, copy]) => (
-            <Card key={title}>
-              <CardHeader>
-                <CardTitle>{title}</CardTitle>
-                <CardDescription className="leading-7">{copy}</CardDescription>
-              </CardHeader>
-            </Card>
-          ))}
-        </section>
+        {detail ? (
+          <>
+            <section className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+              <div className="mb-8">
+                <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--brand-pink)]">Services Offered</div>
+                <h2 className="mt-3 text-3xl font-semibold text-[var(--brand-navy)]">What we build and support</h2>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {detail.servicesOffered.map((item) => (
+                  <Card key={item} className="bg-white">
+                    <CardHeader>
+                      <div className="mb-3 text-[var(--brand-blue)]">
+                        <Code2Icon />
+                      </div>
+                      <CardTitle className="text-lg">{item}</CardTitle>
+                    </CardHeader>
+                  </Card>
+                ))}
+              </div>
+            </section>
 
-        <section className="border-y border-border bg-muted/35">
-          <div className="mx-auto grid w-full max-w-7xl gap-4 px-4 py-16 sm:px-6 lg:grid-cols-4 lg:px-8">
-            {getBenefits(service.name).map((item) => (
-              <Card key={item} className="bg-white">
-                <CardHeader>
-                  <div className="mb-3 text-[var(--brand-green)]">
-                    <CheckCircle2Icon />
+            <section className="border-y border-border bg-muted/35">
+              <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+                <div className="mb-8 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                  <div>
+                    <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--brand-pink)]">Portfolio Showcase</div>
+                    <h2 className="mt-3 text-3xl font-semibold text-[var(--brand-navy)]">Professional placeholders for upcoming digital work</h2>
                   </div>
-                  <CardDescription className="text-sm leading-7 text-foreground">{item}</CardDescription>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-        </section>
+                  <p className="max-w-2xl text-sm leading-7 text-muted-foreground">
+                    These blocks reserve the right categories across websites, CRM, ERP, mobile apps, and software solutions until live projects are published.
+                  </p>
+                </div>
+                <div className="grid gap-4 lg:grid-cols-5">
+                  {detail.portfolio.map((item) => (
+                    <Card key={item.title} className="h-full overflow-hidden bg-white">
+                      <div className="h-32 bg-[linear-gradient(135deg,rgba(10,22,92,0.92),rgba(4,99,153,0.82),rgba(79,181,84,0.68))]" />
+                      <CardHeader>
+                        <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-pink)]">{item.category}</div>
+                        <CardTitle className="text-lg">{item.title}</CardTitle>
+                        <CardDescription className="leading-7">{item.summary}</CardDescription>
+                      </CardHeader>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            </section>
 
-        <section className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-          <div className="mb-8">
-            <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--brand-pink)]">Process</div>
-            <h2 className="mt-3 text-3xl font-semibold text-[var(--brand-navy)]">How this journey moves</h2>
-          </div>
-          <div className="grid gap-4 lg:grid-cols-4">
-            {["Share requirement", "Receive routed response", "Confirm scope", "Move to execution"].map((step, index) => (
-              <Card key={step}>
-                <CardHeader>
-                  <div className="flex size-10 items-center justify-center rounded-full bg-[var(--brand-navy)] text-sm font-semibold text-white">
-                    {index + 1}
+            <section className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-16 sm:px-6 lg:grid-cols-[0.92fr_1.08fr] lg:px-8">
+              <div>
+                <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--brand-pink)]">Technology Stack</div>
+                <h2 className="mt-3 text-3xl font-semibold text-[var(--brand-navy)]">Tools chosen for delivery, maintainability, and scale</h2>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {detail.technologyStack.map((item) => (
+                  <div key={item} className="rounded-2xl border border-border bg-white px-4 py-4 text-sm font-medium text-[var(--brand-navy)] shadow-sm">
+                    {item}
                   </div>
-                  <CardTitle>{step}</CardTitle>
-                  <CardDescription className="leading-7">
-                    Step {index + 1} is tracked within the same operational system supporting the public site.
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-        </section>
+                ))}
+              </div>
+            </section>
 
-        <section className="mx-auto grid w-full max-w-7xl gap-6 px-4 pb-16 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
-          <div className="grid gap-4">
-            <div>
-              <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--brand-pink)]">FAQs</div>
-              <h2 className="mt-3 text-3xl font-semibold text-[var(--brand-navy)]">Common questions</h2>
-            </div>
-            {getFaqs(service.name).map((item) => (
-              <Card key={item.question}>
-                <CardHeader>
-                  <CardTitle className="text-lg">{item.question}</CardTitle>
-                  <CardDescription className="leading-7">{item.answer}</CardDescription>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
+            <section className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+              <div className="mb-8">
+                <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--brand-pink)]">Development Process</div>
+                <h2 className="mt-3 text-3xl font-semibold text-[var(--brand-navy)]">How digital delivery moves from brief to launch</h2>
+              </div>
+              <div className="grid gap-4 lg:grid-cols-4">
+                {detail.process.map((step, index) => (
+                  <Card key={step.title}>
+                    <CardHeader>
+                      <div className="flex size-10 items-center justify-center rounded-full bg-[var(--brand-navy)] text-sm font-semibold text-white">
+                        {index + 1}
+                      </div>
+                      <CardTitle>{step.title}</CardTitle>
+                      <CardDescription className="leading-7">{step.description}</CardDescription>
+                    </CardHeader>
+                  </Card>
+                ))}
+              </div>
+            </section>
 
-          <div className="grid gap-4">
-            <Card className="bg-[linear-gradient(135deg,var(--brand-navy),var(--brand-blue))] text-white">
-              <CardHeader>
-                <CardTitle className="text-2xl">Related services</CardTitle>
-                <CardDescription className="text-white/72">
-                  Requirements often span multiple categories. Continue exploring adjacent service paths.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            {relatedServices.map((item) => (
-              <Card key={item.slug} className="bg-white">
+            <section className="border-y border-border bg-muted/35">
+              <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+                <div className="mb-8">
+                  <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--brand-pink)]">Testimonials</div>
+                  <h2 className="mt-3 text-3xl font-semibold text-[var(--brand-navy)]">What clients value in the software delivery process</h2>
+                </div>
+                <div className="grid gap-4 lg:grid-cols-3">
+                  {detail.testimonials.map((item) => (
+                    <Card key={`${item.name}-${item.company}`} className="bg-white">
+                      <CardHeader>
+                        <QuoteIcon className="text-[var(--brand-green)]" />
+                        <CardDescription className="pt-2 text-base leading-8 text-foreground">{item.quote}</CardDescription>
+                        <div className="pt-3">
+                          <CardTitle className="text-lg">{item.name}</CardTitle>
+                          <div className="text-sm text-muted-foreground">
+                            {item.role}, {item.company}
+                          </div>
+                        </div>
+                      </CardHeader>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            <section className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-16 sm:px-6 lg:grid-cols-[0.92fr_1.08fr] lg:px-8">
+              <div className="grid gap-4">
+                <div>
+                  <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--brand-pink)]">FAQs</div>
+                  <h2 className="mt-3 text-3xl font-semibold text-[var(--brand-navy)]">Common questions</h2>
+                </div>
+                {serviceFaqs.map((item) => (
+                  <Card key={item.question}>
+                    <CardHeader>
+                      <CardTitle className="text-lg">{item.question}</CardTitle>
+                      <CardDescription className="leading-7">{item.answer}</CardDescription>
+                    </CardHeader>
+                  </Card>
+                ))}
+              </div>
+
+              <Card className="self-start bg-[linear-gradient(135deg,var(--brand-navy),var(--brand-blue))] text-white">
                 <CardHeader>
-                  <CardTitle>{item.name}</CardTitle>
-                  <CardDescription className="leading-7">{item.summary}</CardDescription>
-                  <Button variant="outline" render={<Link href={`/services/${item.slug}`} />} className="mt-4 w-fit">
-                    Explore {item.name}
-                    <ArrowRightIcon data-icon="inline-end" />
-                  </Button>
+                  <CardTitle className="text-2xl">{detail.ctaTitle}</CardTitle>
+                  <CardDescription className="text-white/72">{detail.ctaCopy}</CardDescription>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <CallbackButton service={service.slug} className="bg-[var(--brand-pink)] text-white">
+                      Start Project Discussion
+                    </CallbackButton>
+                    <Button variant="secondary" render={<Link href="/blogs" />} className="w-fit">
+                      Read Related Insights
+                      <ArrowRightIcon data-icon="inline-end" />
+                    </Button>
+                  </div>
                 </CardHeader>
               </Card>
-            ))}
-          </div>
-        </section>
+            </section>
+          </>
+        ) : (
+          <>
+            <section className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-16 sm:px-6 lg:grid-cols-3 lg:px-8">
+              {[
+                ["Why this service matters", `${service.name} should feel coordinated, premium, and accountable from first outreach to final execution.`],
+                ["What we capture", service.questions.join(", ")],
+                ["What the client gets", "Clear communication, faster follow-up, and a smoother path from first enquiry to next step."],
+              ].map(([title, copy]) => (
+                <Card key={title}>
+                  <CardHeader>
+                    <CardTitle>{title}</CardTitle>
+                    <CardDescription className="leading-7">{copy}</CardDescription>
+                  </CardHeader>
+                </Card>
+              ))}
+            </section>
+
+            <section className="border-y border-border bg-muted/35">
+              <div className="mx-auto grid w-full max-w-7xl gap-4 px-4 py-16 sm:px-6 lg:grid-cols-4 lg:px-8">
+                {getBenefits(service.name).map((item) => (
+                  <Card key={item} className="bg-white">
+                    <CardHeader>
+                      <div className="mb-3 text-[var(--brand-green)]">
+                        <CheckCircle2Icon />
+                      </div>
+                      <CardDescription className="text-sm leading-7 text-foreground">{item}</CardDescription>
+                    </CardHeader>
+                  </Card>
+                ))}
+              </div>
+            </section>
+
+            <section className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+              <div className="mb-8">
+                <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--brand-pink)]">Process</div>
+                <h2 className="mt-3 text-3xl font-semibold text-[var(--brand-navy)]">How this journey moves</h2>
+              </div>
+              <div className="grid gap-4 lg:grid-cols-4">
+                {["Share requirement", "Receive routed response", "Confirm scope", "Move to execution"].map((step, index) => (
+                  <Card key={step}>
+                    <CardHeader>
+                      <div className="flex size-10 items-center justify-center rounded-full bg-[var(--brand-navy)] text-sm font-semibold text-white">
+                        {index + 1}
+                      </div>
+                      <CardTitle>{step}</CardTitle>
+                      <CardDescription className="leading-7">
+                        Step {index + 1} is tracked within the same operational system supporting the public site.
+                      </CardDescription>
+                    </CardHeader>
+                  </Card>
+                ))}
+              </div>
+            </section>
+
+            <section className="mx-auto grid w-full max-w-7xl gap-6 px-4 pb-16 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
+              <div className="grid gap-4">
+                <div>
+                  <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--brand-pink)]">FAQs</div>
+                  <h2 className="mt-3 text-3xl font-semibold text-[var(--brand-navy)]">Common questions</h2>
+                </div>
+                {serviceFaqs.map((item) => (
+                  <Card key={item.question}>
+                    <CardHeader>
+                      <CardTitle className="text-lg">{item.question}</CardTitle>
+                      <CardDescription className="leading-7">{item.answer}</CardDescription>
+                    </CardHeader>
+                  </Card>
+                ))}
+              </div>
+
+              <div className="grid gap-4">
+                <Card className="bg-[linear-gradient(135deg,var(--brand-navy),var(--brand-blue))] text-white">
+                  <CardHeader>
+                    <CardTitle className="text-2xl">Related services</CardTitle>
+                    <CardDescription className="text-white/72">
+                      Requirements often span multiple categories. Continue exploring adjacent service paths.
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+                {relatedServices.map((item) => (
+                  <Card key={item.slug} className="bg-white">
+                    <CardHeader>
+                      <CardTitle>{item.name}</CardTitle>
+                      <CardDescription className="leading-7">{item.summary}</CardDescription>
+                      <Button variant="outline" render={<Link href={`/services/${item.slug}`} />} className="mt-4 w-fit">
+                        Explore {item.name}
+                        <ArrowRightIcon data-icon="inline-end" />
+                      </Button>
+                    </CardHeader>
+                  </Card>
+                ))}
+              </div>
+            </section>
+          </>
+        )}
       </main>
       <SiteFooter />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
     </div>
   )
 }

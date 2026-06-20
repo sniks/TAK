@@ -40,9 +40,30 @@ export default async function AdminCmsPage() {
   const [blogs, news, galleryItems, testimonials, services, users, roles, mediaLibrary] = await Promise.all([
     prisma.blogPost.findMany({ orderBy: [{ publishDate: "desc" }, { title: "asc" }] }),
     prisma.newsPost.findMany({ orderBy: [{ publishDate: "desc" }, { title: "asc" }] }),
-    prisma.galleryItem.findMany({ include: { service: true }, orderBy: { createdAt: "desc" } }),
+    prisma.galleryItem.findMany({
+      select: {
+        id: true,
+        title: true,
+        category: true,
+        type: true,
+        url: true,
+        service: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
     prisma.testimonial.findMany({ orderBy: { createdAt: "desc" } }),
-    prisma.service.findMany({ where: { isActive: true }, orderBy: { name: "asc" } }),
+    prisma.service.findMany({
+      where: { isActive: true },
+      select: {
+        id: true,
+        name: true,
+      },
+      orderBy: { name: "asc" },
+    }),
     prisma.user.findMany({ include: { roles: { include: { role: true } } }, orderBy: { createdAt: "desc" } }),
     prisma.role.findMany({ orderBy: { name: "asc" } }),
     prisma.setting.findUnique({ where: { key: "media_library" } }),

@@ -8,6 +8,7 @@ import { Header } from "@/components/marketing/header"
 import { SiteFooter } from "@/components/marketing/site-footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { renderServiceIcon } from "@/lib/service-icons"
 import { getPublicServices, getSiteSettings } from "@/lib/site-settings"
 
 export const metadata: Metadata = {
@@ -19,7 +20,7 @@ const featuredGroups = [
   "Corporate experiences and team engagement",
   "Travel, retreats, and experiential wellness",
   "Brand building, media, and artist support",
-  "Property, finance, astrology, and lifestyle services",
+  "Property, finance, lifestyle services, and digital transformation",
 ]
 
 export default async function ServicesPage() {
@@ -83,7 +84,8 @@ export default async function ServicesPage() {
             </p>
           </div>
           <div className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {services.map((service, index) => (
+            {services.map((service, index) => {
+              return (
               <Card key={service.slug} className="group h-full overflow-hidden border-border/80 bg-white transition hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-950/10">
                 <CardHeader>
                   <div
@@ -95,7 +97,7 @@ export default async function ServicesPage() {
                           : "flex size-11 shrink-0 items-center justify-center text-[var(--brand-green)]"
                     }
                   >
-                    <SparklesIcon />
+                    {renderServiceIcon(service.slug)}
                   </div>
                   <CardTitle>{service.name}</CardTitle>
                   <CardDescription className="leading-7">{service.summary}</CardDescription>
@@ -112,7 +114,8 @@ export default async function ServicesPage() {
                   </Button>
                 </CardHeader>
               </Card>
-            ))}
+              )
+            })}
           </div>
         </section>
 

@@ -12,6 +12,9 @@ export async function assignLeadOwnerFromDatabase(input: RoutingInput): Promise<
     where: {
       OR: [{ slug: input.service }, { name: input.service }],
     },
+    select: {
+      id: true,
+    },
   })
   const rules = await prisma.leadRoutingRule.findMany({
     where: {

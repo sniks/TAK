@@ -117,6 +117,19 @@ export const serviceCategories = [
     questions: ["Wellness Service Type", "Preferred Location", "Preferred Date", "Requirement Details"],
   },
   {
+    name: "Website & Software Development",
+    slug: "website-software-development",
+    summary: "Websites, CRM, ERP, mobile apps, and custom software delivery for brands investing in digital transformation.",
+    questions: [
+      "Project Type",
+      "Business Type",
+      "Project Budget",
+      "Expected Timeline",
+      "Technology Preference",
+      "Requirement Details",
+    ],
+  },
+  {
     name: "Other",
     slug: "other",
     summary: "Custom requirements routed to the right Taakshvi team member.",
@@ -126,6 +139,53 @@ export const serviceCategories = [
 
 export type ServiceSlug = (typeof serviceCategories)[number]["slug"]
 
+export const serviceQuestionFieldConfig: Partial<
+  Record<
+    ServiceSlug,
+    Array<{
+      label: string
+      type: "text" | "textarea" | "select"
+      options?: string[]
+    }>
+  >
+> = {
+  "website-software-development": [
+    {
+      label: "Project Type",
+      type: "select",
+      options: ["Website", "Web Application", "CRM", "ERP", "Mobile App", "Custom Software", "Other"],
+    },
+    {
+      label: "Business Type",
+      type: "select",
+      options: ["Startup", "SME", "Enterprise", "Personal", "Other"],
+    },
+    {
+      label: "Project Budget",
+      type: "select",
+      options: ["Under ₹25,000", "₹25,000 - ₹50,000", "₹50,000 - ₹1 Lakh", "₹1 Lakh - ₹5 Lakh", "₹5 Lakh+"],
+    },
+    {
+      label: "Expected Timeline",
+      type: "select",
+      options: ["Immediate", "1 Month", "2-3 Months", "Flexible"],
+    },
+    {
+      label: "Technology Preference",
+      type: "select",
+      options: ["React", "Next.js", "Laravel", "Node.js", "WordPress", "Mobile App", "No Preference"],
+    },
+    {
+      label: "Requirement Details",
+      type: "textarea",
+    },
+  ],
+}
+
 export function getServiceBySlug(slug: string) {
   return serviceCategories.find((service) => service.slug === slug)
+}
+
+export function getServiceQuestionFields(slug: string) {
+  return serviceQuestionFieldConfig[slug as ServiceSlug] ?? null
 }

@@ -59,6 +59,10 @@ export type SiteSettings = {
     enabled: boolean
     limit: number
     liveBadge: boolean
+    autoHideSeconds: number
+    inactivityReappearSeconds: number
+    rotationSeconds: number
+    displayStyle: "toast" | "popup" | "floating-card"
   }
 }
 
@@ -121,6 +125,10 @@ const defaultSettings: SiteSettings = {
     enabled: true,
     limit: 4,
     liveBadge: true,
+    autoHideSeconds: 10,
+    inactivityReappearSeconds: 45,
+    rotationSeconds: 18,
+    displayStyle: "floating-card",
   },
 }
 
@@ -292,17 +300,39 @@ export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
         typeof recent.limit === "number" && Number.isFinite(recent.limit) ? recent.limit : defaultSettings.recentEnquiries.limit,
       liveBadge:
         typeof recent.liveBadge === "boolean" ? recent.liveBadge : defaultSettings.recentEnquiries.liveBadge,
+      autoHideSeconds:
+        typeof recent.autoHideSeconds === "number" && Number.isFinite(recent.autoHideSeconds)
+          ? recent.autoHideSeconds
+          : defaultSettings.recentEnquiries.autoHideSeconds,
+      inactivityReappearSeconds:
+        typeof recent.inactivityReappearSeconds === "number" && Number.isFinite(recent.inactivityReappearSeconds)
+          ? recent.inactivityReappearSeconds
+          : defaultSettings.recentEnquiries.inactivityReappearSeconds,
+      rotationSeconds:
+        typeof recent.rotationSeconds === "number" && Number.isFinite(recent.rotationSeconds)
+          ? recent.rotationSeconds
+          : defaultSettings.recentEnquiries.rotationSeconds,
+      displayStyle:
+        recent.displayStyle === "toast" || recent.displayStyle === "popup" || recent.displayStyle === "floating-card"
+          ? recent.displayStyle
+          : defaultSettings.recentEnquiries.displayStyle,
     },
   }
 })
 
 export const getPublicServices = cache(async (): Promise<PublicService[]> => {
-  const services = await prisma.service.findMany({
-    where: { isActive: true },
+  const databaseServices = await prisma.service.findMany({
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      description: true,
+      isActive: true,
+    },
     orderBy: [{ name: "asc" }],
   })
 
-  if (!services.length) {
+  if (!databaseServices.length) {
     return serviceCategories.map((service) => ({
       name: service.name,
       slug: service.slug,
@@ -312,18 +342,35 @@ export const getPublicServices = cache(async (): Promise<PublicService[]> => {
     }))
   }
 
-  return services.map((service) => {
+  const mergedServices = new Map<string, PublicService>()
+  for (const service of databaseServices) {
     const fallback = serviceCategories.find((item) => item.slug === service.slug)
 
-    return {
+    mergedServices.set(service.slug, {
       id: service.id,
       name: service.name,
       slug: service.slug,
       summary: service.description || fallback?.summary || service.name,
       questions: fallback ? Array.from(fallback.questions) : ["Requirement Details"],
       isActive: service.isActive,
-    }
-  })
+    })
+  }
+
+  for (const service of serviceCategories) {
+    if (mergedServices.has(service.slug)) continue
+
+    mergedServices.set(service.slug, {
+      name: service.name,
+      slug: service.slug,
+      summary: service.summary,
+      questions: Array.from(service.questions),
+      isActive: true,
+    })
+  }
+
+  return [...mergedServices.values()]
+    .filter((service) => service.isActive)
+    .sort((a, b) => a.name.localeCompare(b.name))
 })
 
 export async function getSiteData() {

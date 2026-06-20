@@ -49,6 +49,10 @@ export async function updateSettings(formData: FormData) {
   const recentEnabled = formData.get("recentEnabled") === "on"
   const recentLiveBadge = formData.get("recentLiveBadge") === "on"
   const recentLimit = Number(formData.get("recentLimit") ?? 4)
+  const recentAutoHideSeconds = Number(formData.get("recentAutoHideSeconds") ?? 10)
+  const recentInactivityReappearSeconds = Number(formData.get("recentInactivityReappearSeconds") ?? 45)
+  const recentRotationSeconds = Number(formData.get("recentRotationSeconds") ?? 18)
+  const recentDisplayStyle = String(formData.get("recentDisplayStyle") ?? "floating-card")
 
   const seoTitle = String(formData.get("seoTitle") ?? "")
   const seoDescription = String(formData.get("seoDescription") ?? "")
@@ -71,6 +75,9 @@ export async function updateSettings(formData: FormData) {
   const ctaCopy = String(formData.get("ctaCopy") ?? "")
   const emailFrom = String(formData.get("emailFrom") ?? "")
   const emailReplyTo = String(formData.get("emailReplyTo") ?? "")
+  const emailBcc = splitLines(formData.get("emailBcc"))
+  const emailCc = splitLines(formData.get("emailCc"))
+  const emailEnableBcc = formData.get("emailEnableBcc") === "on"
   const whatsappPrimary = String(formData.get("whatsappPrimary") ?? "")
   const footerTrustHeading = String(formData.get("footerTrustHeading") ?? "")
   const footerTrustPoints = splitLines(formData.get("footerTrustPoints"))
@@ -94,6 +101,10 @@ export async function updateSettings(formData: FormData) {
       enabled: recentEnabled,
       limit: recentLimit,
       liveBadge: recentLiveBadge,
+      autoHideSeconds: recentAutoHideSeconds,
+      inactivityReappearSeconds: recentInactivityReappearSeconds,
+      rotationSeconds: recentRotationSeconds,
+      displayStyle: recentDisplayStyle,
     }),
     upsertSetting("site_seo", {
       title: seoTitle,
@@ -126,7 +137,13 @@ export async function updateSettings(formData: FormData) {
       ctaTitle,
       ctaCopy,
     }),
-    upsertSetting("email_settings", { from: emailFrom, replyTo: emailReplyTo }),
+    upsertSetting("email_settings", {
+      from: emailFrom,
+      replyTo: emailReplyTo,
+      bcc: emailBcc,
+      cc: emailCc,
+      enableBcc: emailEnableBcc,
+    }),
     upsertSetting("whatsapp_settings", { primary: whatsappPrimary }),
     upsertSetting("footer_settings", {
       trustHeading: footerTrustHeading,
@@ -235,12 +252,16 @@ export async function createService(formData: FormData) {
   const name = String(formData.get("name") ?? "")
   const slug = String(formData.get("slug") ?? "")
   const description = String(formData.get("description") ?? "")
+  const serviceEmail = String(formData.get("serviceEmail") ?? "")
+  const serviceWhatsappNumber = String(formData.get("serviceWhatsappNumber") ?? "")
 
   const service = await prisma.service.create({
     data: {
       name,
       slug,
       description,
+      serviceEmail: serviceEmail || null,
+      serviceWhatsappNumber: serviceWhatsappNumber || null,
       isActive: true,
     },
   })
@@ -249,7 +270,7 @@ export async function createService(formData: FormData) {
     action: "service.created",
     entity: "service",
     entityId: service.id,
-    metadata: { name, slug },
+    metadata: { name, slug, serviceEmail, serviceWhatsappNumber },
   })
 
   revalidateSite()
@@ -262,6 +283,8 @@ export async function updateServices(formData: FormData) {
   const names = formData.getAll("serviceName").map(String)
   const slugs = formData.getAll("serviceSlug").map(String)
   const descriptions = formData.getAll("serviceDescription").map(String)
+  const serviceEmails = formData.getAll("serviceEmail").map(String)
+  const serviceWhatsappNumbers = formData.getAll("serviceWhatsappNumber").map(String)
   const activeIds = new Set(formData.getAll("serviceIsActive").map(String))
 
   for (let index = 0; index < ids.length; index += 1) {
@@ -274,6 +297,8 @@ export async function updateServices(formData: FormData) {
         name: names[index] || "",
         slug: slugs[index] || "",
         description: descriptions[index] || "",
+        serviceEmail: serviceEmails[index] || null,
+        serviceWhatsappNumber: serviceWhatsappNumbers[index] || null,
         isActive: activeIds.has(id),
       },
     })

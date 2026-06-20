@@ -8,7 +8,6 @@ import { EnquiryForm } from "@/components/marketing/enquiry-form"
 import { Header } from "@/components/marketing/header"
 import { SiteFooter } from "@/components/marketing/site-footer"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { getSiteSettings } from "@/lib/site-settings"
 
 export const metadata: Metadata = {
   title: "Contact Us",
@@ -16,8 +15,6 @@ export const metadata: Metadata = {
 }
 
 export default async function ContactPage() {
-  const settings = await getSiteSettings()
-
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -35,25 +32,36 @@ export default async function ContactPage() {
               <div className="mt-8 grid items-stretch gap-4 sm:grid-cols-3">
                 <ContactCard
                   title="Call"
-                  copy={settings.primaryPhone}
-                  href={`tel:${settings.primaryPhone}`}
+                  copy="Talk to the assigned owner"
                   icon={<PhoneCallIcon />}
-                />
+                >
+                  <CallbackButton variant="outline" mode="call" source="Contact Page Call CTA" ctaType="call">
+                    Call Now
+                  </CallbackButton>
+                </ContactCard>
                 <ContactCard
                   title="WhatsApp"
                   copy="Instant service conversation"
-                  href={`https://wa.me/${settings.primaryWhatsapp}?text=Hello%20Team%2C%20I%20would%20like%20to%20discuss%20a%20service%20requirement.`}
                   icon={<MessageCircleIcon />}
-                />
+                >
+                  <CallbackButton variant="outline" mode="whatsapp" source="Contact Page WhatsApp CTA" ctaType="whatsapp">
+                    Open WhatsApp
+                  </CallbackButton>
+                </ContactCard>
                 <ContactCard
                   title="Email"
-                  copy={settings.primaryEmail}
-                  href={`mailto:${settings.primaryEmail}`}
+                  copy="Send a tracked email enquiry"
                   icon={<MailIcon />}
-                />
+                >
+                  <CallbackButton variant="outline" mode="email" source="Contact Page Email CTA" ctaType="email">
+                    Email Team
+                  </CallbackButton>
+                </ContactCard>
               </div>
               <div className="mt-8">
-                <CallbackButton className="bg-[var(--brand-pink)] text-white">Open Callback Options</CallbackButton>
+                <CallbackButton className="bg-[var(--brand-pink)] text-white" source="Contact Page Callback CTA" ctaType="callback">
+                  Open Callback Options
+                </CallbackButton>
               </div>
             </div>
 
@@ -65,7 +73,7 @@ export default async function ContactPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <EnquiryForm />
+                <EnquiryForm source="Contact Page Form" ctaType="form" />
               </CardContent>
             </Card>
           </div>
@@ -79,22 +87,20 @@ export default async function ContactPage() {
 function ContactCard({
   title,
   copy,
-  href,
   icon,
+  children,
 }: {
   title: string
   copy: string
-  href: string
   icon: ReactNode
+  children: ReactNode
 }) {
   return (
-    <a
-      href={href}
-      className="flex h-full min-h-[152px] w-full flex-col overflow-hidden rounded-2xl border border-border bg-white p-5 shadow-lg shadow-blue-950/6 transition hover:-translate-y-1 hover:shadow-xl"
-    >
+    <div className="flex h-full min-h-[152px] w-full flex-col overflow-hidden rounded-2xl border border-border bg-white p-5 shadow-lg shadow-blue-950/6 transition hover:-translate-y-1 hover:shadow-xl">
       <div className="mb-3 flex size-11 shrink-0 items-center justify-center text-[var(--brand-pink)]">{icon}</div>
       <div className="min-w-0 font-semibold text-[var(--brand-navy)]">{title}</div>
       <div className="mt-1 min-w-0 break-words text-sm leading-6 text-muted-foreground [overflow-wrap:anywhere]">{copy}</div>
-    </a>
+      <div className="mt-4">{children}</div>
+    </div>
   )
 }
