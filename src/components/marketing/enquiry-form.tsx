@@ -39,12 +39,9 @@ export function EnquiryForm({
   defaultService?: string
   variant?: "full" | "compact"
 }) {
-<<<<<<< HEAD
   const formRef = useRef<HTMLFormElement | null>(null)
   const requestIdRef = useRef<string>("")
-=======
   const { services } = useSiteData()
->>>>>>> 9bf5a1aedc66c65053fa88dcdca22aed9d43af89
   const [selectedService, setSelectedService] = useState(defaultService)
   const [pending, setPending] = useState(false)
   const service = useMemo(
