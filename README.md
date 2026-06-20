@@ -81,7 +81,7 @@ This applies the Prisma migrations from `prisma/migrations`.
 
 ## 7. Seed Demo Data
 
-```bash
+```bash 
 npm run prisma:seed
 ```
 
@@ -200,3 +200,4 @@ On Windows PowerShell:
 Remove-Item -Recurse -Force node_modules
 npm install
 ```
+:;
